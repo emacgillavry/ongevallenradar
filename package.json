@@ -4,13 +4,16 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "vite preview"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bartvde/ongevallenradar.git"
+    "url": "git+https://github.com/emacgillavry/ongevallenradar.git"
   },
-  "author": "Bart van den Eijnden (OSGIS)",
+  "author": "Edward Mac Gillavry (Webmapper)",
   "license": "BSD-2-Clause",
   "dependencies": {
     "bootstrap": "^3.3.7",
@@ -22,7 +25,10 @@
     "pretty-checkbox": "^2.1.0"
   },
   "bugs": {
-    "url": "https://github.com/bartvde/ongevallenradar/issues"
+    "url": "https://github.com/emacgillavry/ongevallenradar/issues"
   },
-  "homepage": "https://github.com/bartvde/ongevallenradar#readme"
+  "homepage": "https://github.com/emacgillavry/ongevallenradar#readme",
+  "devDependencies": {
+    "vite": "^7.1.11"
+  }
 }
