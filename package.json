@@ -20,8 +20,7 @@
     "jquery": "^2.2.4",
     "js-cookie": "^3.0.5",
     "multiselect": "^0.9.12",
-    "openlayers": "3.18.1",
-    "pretty-checkbox": "^2.1.0"
+    "openlayers": "3.18.1"
   },
   "bugs": {
     "url": "https://github.com/emacgillavry/ongevallenradar/issues"
