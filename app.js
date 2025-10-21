@@ -63,8 +63,8 @@
   }
   loadCirkelFromCookie();
 
-  var geoserverHost = import.meta.env.VITE_GEOSERVER_HOST || 'geoserver.stichtingimn.nl';
-  var geoserverPath = import.meta.env.VITE_GEOSERVER_PATH || '/geoserver/ows';
+  var geoserverHost = import.meta.env.VITE_WFS_HOST || 'geoserver.stichtingimn.nl';
+  var geoserverPath = import.meta.env.VITE_WFS_PATH || '/geoserver/ows';
   var geoserverUrl = geoserverHost + geoserverPath + '?';
   var useJSONP = true;
 
