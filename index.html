@@ -22,7 +22,7 @@
 <body>
   <div id='map'>
     <div id='attribution'>
-      <a href="http://www.stichtingimn.nl"/><label class='attribution'>Stichting Incident Management Nederland</label></a>
+      <a href="http://www.stichtingimn.nl"><label class='attribution'>Stichting Incident Management Nederland</label></a>
     </div>
   </div>
   <div id='centerpanel'>
@@ -30,7 +30,7 @@
   </div>
   <div id='eastpanel'>
     <div id='secondaryoptions'>
-      <a href="http://www.stichtingimn.nl"/><div class='title'></div></a>
+      <a href="http://www.stichtingimn.nl"><div class='title'></div></a>
       <div class='between'></div>
       <div id='filter-melder'></div>
       <div class='between'></div>
@@ -48,7 +48,7 @@
       <button id='backtomain' title='Ga terug naar het hoofd menu'>Terug naar Hoofdmenu</button> 
     </div>
     <div id='mainoptions' class='flexcontainer'>
-      <a href="http://www.stichtingimn.nl"/><div class='title'></div></a>
+      <a href="http://www.stichtingimn.nl"><div class='title'></div></a>
       <div class='between'></div>
       <div id='layers'>
         <div id='layer-body'></div>
@@ -63,7 +63,6 @@
       <div class='between'></div>
       <div id='beep'>
         <span id='beep-button'><img id='beep-button-img' src="img/sound_on.svg" width="32" height="32" style="cursor: pointer;" title="zet geluid bij nieuwe melding aan/uit"/></span>
-        <select id="beep-select"><option value="beep">Beep</option><option value="bell">Bel</option></select>
       </div>
       <div class='between'></div>
       <div id='legend' title='Het bij elke melding gepubliceerde tijdstip betreft het moment waarop het LCM het dossier afsluit en het proces van inschakeling van de berger begint. Meldingen verschijnen in beeld met een vertraging van tien tot dertig seconden ten opzichte van het gepubliceerde tijdstip.'>
@@ -102,9 +101,6 @@
       <div id="popup-content" class="popover-content"></div>
     </div>
   </div>
-  <audio id="bell">
-    <source src="./sounds/91926__tim-kahn__ding.wav" />
-  </audio>
   <script src="app.js"></script>
 </body>
 </html>
