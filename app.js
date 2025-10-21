@@ -63,8 +63,9 @@
   }
   loadCirkelFromCookie();
 
-  var protocol = (window.location.protocol === 'https:') ? 'https:' : 'http:';
-  var geoserverUrl = protocol + '//geoserver.stichtingimn.nl/geoserver/ows?';
+  var geoserverHost = import.meta.env.VITE_GEOSERVER_HOST || 'geoserver.stichtingimn.nl';
+  var geoserverPath = import.meta.env.VITE_GEOSERVER_PATH || '/geoserver/ows';
+  var geoserverUrl = geoserverHost + geoserverPath + '?';
   var useJSONP = true;
 
   var rayons = [
@@ -936,7 +937,7 @@
     $('#melder_' + melders[m].id).on('change', handleMelderFilter);
   }
 
-  setMelderFilter = function() {
+  var setMelderFilter = function() {
     for (i = 0, ii = melders.length; i < ii; ++i) {
       var checked = selectedMeldersCat[melders[i].id];
       $('#melder_' + melders[i].id).prop('checked', checked);
@@ -944,7 +945,7 @@
         handleMelderFilter({target: $('#melder_' + melders[i].id)[0]});
       }
     }
-  }
+  };
   setMelderFilter();
 
   var handleTypeFilter = function(evt) {
@@ -973,7 +974,7 @@
     $('#type_' + typeOptions[t].id).on('change', handleTypeFilter);
   }
 
-  setTypeFilter = function() {
+  var setTypeFilter = function() {
     for (t = 0, tt = typeOptions.length; t < tt; ++t) {
       var checked = selectedTypes[typeOptions[t].id];
       $('#type_' + typeOptions[t].id).prop('checked', checked);
@@ -981,7 +982,7 @@
         handleTypeFilter({target: $('#type_' + typeOptions[t].id)[0]});
       }
     }
-  }
+  };
   setTypeFilter();
 
   var findLayerById = function(id) {
