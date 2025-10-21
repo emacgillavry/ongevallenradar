@@ -91,7 +91,7 @@ function startApp() {
   }
   loadCirkelFromCookie();
 
-  var geoserverHost = import.meta.env.VITE_WFS_HOST || 'geoserver.stichtingimn.nl';
+  var geoserverHost = import.meta.env.VITE_WFS_HOST || 'https://geoserver.stichtingimn.nl';
   var geoserverPath = import.meta.env.VITE_WFS_PATH || '/geoserver/ows';
   var geoserverUrl = geoserverHost + geoserverPath + '?';
   var useJSONP = true;
