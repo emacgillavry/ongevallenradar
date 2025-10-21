@@ -30,7 +30,8 @@ function startApp() {
   var cookieName = 'ongevallenradar';
   var cookieInfo;
   var loadCookie = function() {
-    cookieInfo = Cookies.getJSON(cookieName);
+    var cookieValue = Cookies.get(cookieName);
+    cookieInfo = cookieValue ? JSON.parse(cookieValue) : null;
   }
   loadCookie();
   var filterType;
@@ -627,7 +628,7 @@ function startApp() {
     json.allowBeep = allowBeep;
     json.filterType = filterType;
     json.selectedTypes = selectedTypes;
-    Cookies.set(cookieName, json);
+    Cookies.set(cookieName, JSON.stringify(json));
   });
 
   $('#clear').on('click', function(evt) {
