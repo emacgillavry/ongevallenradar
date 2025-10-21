@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
+import compression from 'vite-plugin-compression'
 
 export default defineConfig({
   build: {
@@ -17,7 +18,7 @@ export default defineConfig({
     viteStaticCopy({
       targets: [
         {
-          src: 'vendor/openlayers/dist/*',
+          src: ['vendor/openlayers/dist/ol.js', 'vendor/openlayers/dist/ol.css'],
           dest: 'vendor/openlayers/dist'
         },
         {
@@ -25,6 +26,16 @@ export default defineConfig({
           dest: 'img'
         }
       ]
+    }),
+    // Generate gzip compressed files
+    compression({
+      algorithm: 'gzip',
+      ext: '.gz'
+    }),
+    // Generate Brotli compressed files
+    compression({
+      algorithm: 'brotliCompress',
+      ext: '.br'
     })
   ]
 })
