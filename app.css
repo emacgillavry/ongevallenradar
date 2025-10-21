@@ -245,3 +245,21 @@ button {
   text-align: right;
   color: #D3E6EC;
 }
+
+/* Mobile styles for screens 800px and smaller */
+@media (max-width: 800px) {
+  #eastpanel {
+    display: none;
+  }
+  #centerpanel {
+    display: none;
+  }
+  #map {
+    width: 100%;
+  }
+  #popup {
+    height: 200px;
+    overflow: auto;
+    top: -200px;
+  }
+}
