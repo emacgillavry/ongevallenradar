@@ -1,7 +1,6 @@
 // Import CSS dependencies first (OpenLayers CSS loaded via HTML)
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'multiselect/css/multi-select.css';
-import 'material-icons/css/material-icons.min.css';
 import 'pretty-checkbox/src/pretty.min.css';
 
 // Import jQuery and make it globally available

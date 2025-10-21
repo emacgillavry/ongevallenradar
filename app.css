@@ -246,6 +246,13 @@ button {
   color: #D3E6EC;
 }
 
+/* Simple CSS checkmark icon to replace Material Icons */
+.mi-check::before {
+  content: "✓";
+  font-weight: bold;
+  color: #077395;
+}
+
 /* Mobile styles for screens 800px and smaller */
 @media (max-width: 800px) {
   #eastpanel {
