@@ -1,5 +1,4 @@
 // Import CSS dependencies first (OpenLayers CSS loaded via HTML)
-import 'bootstrap/dist/css/bootstrap.min.css';
 import 'multiselect/css/multi-select.css';
 
 // Import jQuery and make it globally available
@@ -15,7 +14,6 @@ import Cookies from 'js-cookie';
 
 // Dynamically import jQuery-dependent libraries and wait for them before starting the app
 Promise.all([
-  import('bootstrap/dist/js/bootstrap.min.js'),
   import('multiselect/js/jquery.multi-select.js')
 ]).then(() => {
   // Now start the main application code

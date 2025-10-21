@@ -1,3 +1,20 @@
+* {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+:after,:before {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+}
+
 html, body {
   width: 100%;
   height: 100%;
@@ -6,6 +23,8 @@ body {
   margin: 0;
   font-family: Verdana, Arial, "Trebuchet MS", Helvetica, sans-serif !important;
   font-size: 14px !important;
+  line-height: 1.42857143;
+  color: #333;
 }
 .ol-zoom {
   font-size: 16px;
@@ -17,8 +36,10 @@ body {
   font-size: 14px !important;
 }
 label {
+  display: inline-block;
+  margin-bottom: 5px;
   color: #077395;
-  font-weight: normal !important;
+  font-weight: normal;
 }
 button {
   background-color: white;
@@ -108,6 +129,8 @@ button {
 .legendimg {
   padding: 2px;
   width: 28px;
+  border: 0;
+  vertical-align: middle;
 }
 .legendtext {
   padding-left: 15px;
@@ -136,6 +159,7 @@ button {
 .attribution {
   cursor: pointer;
   margin-bottom: 0px;
+  font-weight: 700;
 }
 #attribution {
   background-color: white;
@@ -173,11 +197,17 @@ button {
 }
 .ol-popup-closer {
   text-decoration: none;
+  color: #337ab7;
   position: absolute;
   top: 2px;
   right: 8px;
   font-size: 20px;
 }
+
+.ol-popup-closer:hover {
+  color: #23527c;
+}
+
 .ol-popup-closer:after {
   content: "✖";
 }
@@ -207,6 +237,8 @@ button {
   padding-top: 10px;
   padding-bottom: 10px;
   font-size: 18px;
+  line-height: 1.42857143;
+  font-family: Verdana, Arial, "Trebuchet MS", Helvetica, sans-serif;
 }
 #mainoptions {
   width: 100%;
@@ -286,7 +318,7 @@ button {
   display: inline-block;
   box-sizing: initial;
   min-width: 1em;
-  margin-right: 2px;
+  margin-right: 6px;
   padding: 1px;
   text-align: center;
 }
@@ -347,4 +379,212 @@ button {
     overflow: auto;
     top: -200px;
   }
+}
+
+/* Bootstrap replacement styles */
+.form-control {
+  display: block;
+  width: 100%;
+  padding: 6px 12px;
+  font-size: 14px;
+  line-height: 1.42857143;
+  color: #555;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.form-control:focus {
+  border-color: #66afe9;
+  outline: 0;
+  box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102,175,233,.6);
+}
+
+/* Table styles - consolidated */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+/* General table cell styles */
+td, th {
+  padding: 0;
+  vertical-align: middle;
+}
+
+/* Bootstrap popover styles (extracted for popup functionality) */
+.popover {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1060;
+  display: none;
+  max-width: 276px;
+  padding: 1px;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.42857143;
+  text-align: left;
+  text-decoration: none;
+  text-shadow: none;
+  text-transform: none;
+  letter-spacing: normal;
+  word-break: normal;
+  word-spacing: normal;
+  word-wrap: normal;
+  white-space: normal;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid #ccc;
+  border: 1px solid rgba(0,0,0,.2);
+  border-radius: 6px;
+  box-shadow: 0 5px 10px rgba(0,0,0,.2);
+}
+
+.popover.top {
+  margin-top: -10px;
+}
+
+.popover.right {
+  margin-left: 10px;
+}
+
+.popover.bottom {
+  margin-top: 10px;
+}
+
+.popover.left {
+  margin-left: -10px;
+}
+
+.popover-title {
+  font-weight: 500;
+  line-height: 1.1;
+  padding: 8px 14px;
+  margin: 0;
+  font-size: 14px;
+  background-color: #f7f7f7;
+  border-bottom: 1px solid #ebebeb;
+  border-radius: 5px 5px 0 0;
+}
+
+.popover-content {
+  padding: 9px 14px;
+}
+
+.popover > .arrow,
+.popover > .arrow:after {
+  position: absolute;
+  display: block;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+}
+
+.popover > .arrow {
+  border-width: 11px;
+}
+
+.popover > .arrow:after {
+  content: "";
+  border-width: 10px;
+}
+
+.popover.top > .arrow {
+  bottom: -11px;
+  left: 50%;
+  margin-left: -11px;
+  border-top-color: #999;
+  border-top-color: rgba(0,0,0,.25);
+  border-bottom-width: 0;
+}
+
+.popover.top > .arrow:after {
+  bottom: 1px;
+  margin-left: -10px;
+  content: "";
+  border-top-color: #fff;
+  border-bottom-width: 0;
+}
+
+/* Popover variants for different positions */
+.popover.right > .arrow {
+  top: 50%;
+  left: -11px;
+  margin-top: -11px;
+  border-right-color: #999;
+  border-right-color: rgba(0,0,0,.25);
+  border-left-width: 0;
+}
+
+.popover.right > .arrow:after {
+  bottom: -10px;
+  left: 1px;
+  content: "";
+  border-right-color: #fff;
+  border-left-width: 0;
+}
+
+.popover.bottom > .arrow {
+  top: -11px;
+  left: 50%;
+  margin-left: -11px;
+  border-top-width: 0;
+  border-bottom-color: #999;
+  border-bottom-color: rgba(0,0,0,.25);
+}
+
+.popover.bottom > .arrow:after {
+  top: 1px;
+  margin-left: -10px;
+  content: "";
+  border-top-width: 0;
+  border-bottom-color: #fff;
+}
+
+.popover.left > .arrow {
+  top: 50%;
+  right: -11px;
+  margin-top: -11px;
+  border-right-width: 0;
+  border-left-color: #999;
+  border-left-color: rgba(0,0,0,.25);
+}
+
+.popover.left > .arrow:after {
+  right: 1px;
+  bottom: -10px;
+  content: "";
+  border-right-width: 0;
+  border-left-color: #fff;
+}
+
+/* Bootstrap .table class replacement (for popup tables) */
+.table {
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: 20px
+}
+
+/* Bootstrap .table enhanced rules (extracted) - ensure popup tables match Bootstrap visuals */
+.table>thead>tr>th,
+.table>thead>tr>td,
+.table>tbody>tr>th,
+.table>tbody>tr>td,
+.table>tfoot>tr>th,
+.table>tfoot>tr>td {
+  padding: 8px;
+  line-height: 1.42857143;
+  vertical-align: top;
+  border-top: 1px solid #ddd;
+}
+
+.table>thead>tr>th {
+  vertical-align: bottom;
+  border-bottom: 2px solid #ddd;
 }

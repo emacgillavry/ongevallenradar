@@ -16,7 +16,6 @@
   "author": "Edward Mac Gillavry (Webmapper)",
   "license": "BSD-2-Clause",
   "dependencies": {
-    "bootstrap": "^3.3.7",
     "jquery": "^2.2.4",
     "js-cookie": "^3.0.5",
     "multiselect": "^0.9.12",
