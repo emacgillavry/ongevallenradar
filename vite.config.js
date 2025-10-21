@@ -11,6 +11,10 @@ export default defineConfig({
         {
           src: 'vendor/openlayers/dist/*',
           dest: 'vendor/openlayers/dist'
+        },
+        {
+          src: 'img/*',
+          dest: 'img'
         }
       ]
     })
