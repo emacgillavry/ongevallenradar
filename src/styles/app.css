@@ -80,7 +80,7 @@ button {
   margin: 15px 0px 0px 30px;
   background-color: white;
   height: 80px;
-  background-image: url(img/logo.svg);
+  background-image: url(../assets/images/logo.svg);
   background-size: 275px 72px;
   background-repeat: no-repeat;
   background-position: left;
@@ -265,12 +265,12 @@ button {
   top: 0px;
 }
 .collapsed {
-  background-image: url(img/collapse.svg);
+  background-image: url(../assets/images/collapse.svg);
   background-size: 15px 15px;
   cursor: pointer;
 }
 .expanded {
-  background-image: url(img/expand.svg);
+  background-image: url(../assets/images/expand.svg);
   background-size: 15px 15px;
   cursor: pointer;
 }

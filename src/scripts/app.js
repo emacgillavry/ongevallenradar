@@ -657,8 +657,8 @@ function startApp() {
   });
 
   var setToggleImg = function() {
-    var toggleAanImg = 'img/toggle_aan.svg';
-    var toggleUitImg = 'img/toggle_uit.svg';
+    var toggleAanImg = 'assets/images/toggle_aan.svg';
+    var toggleUitImg = 'assets/images/toggle_uit.svg';
     if (filterRayon) {
       $('#filter-button-img').attr('src', toggleUitImg);
     } else {
@@ -686,7 +686,7 @@ function startApp() {
         selectedRayons[values[0]] = false;
       }
       if (!hasRayon()) {
-        $('#filter-button-img').attr('src', 'img/toggle_aan.svg');
+        $('#filter-button-img').attr('src', 'assets/images/toggle_aan.svg');
         filterRayon = false;
         for (var key in sources) {
           var source = sources[key];
@@ -796,12 +796,12 @@ function startApp() {
   });
 
   var setBeepImg = function() {
-    var beepAanImg = 'img/sound_on.svg';
-    var beepUitImg = 'img/sound_off.svg';
+    var soundOnImg = 'assets/images/sound_on.svg';
+    var soundOffImg = 'assets/images/sound_off.svg';
     if (allowBeep) {
-      $('#beep-button-img').attr('src', beepAanImg);
+      $('#beep-button-img').attr('src', soundOnImg);
     } else {
-      $('#beep-button-img').attr('src', beepUitImg);
+      $('#beep-button-img').attr('src', soundOffImg);
     }
   };
   setBeepImg();
