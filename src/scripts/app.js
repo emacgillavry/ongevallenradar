@@ -596,7 +596,7 @@ function startApp() {
   }
 
   for (var i = 0, ii = rayons.length; i < ii; ++i) {
-    $('#sel-rayon').append($("<option></option>").attr("value", rayons[i]).text(rayons[i]));
+    $('#sel-rayon').multiSelect('addOption', { value: rayons[i], text: rayons[i] });
   }
 
   var hasRayon = function() {
