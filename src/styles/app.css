@@ -32,7 +32,8 @@ body {
 .ol-zoom button {
   color: white !important;
 }
-.ms-container .ms-selectable li.ms-elem-selectable, .ms-container .ms-selection li.ms-elem-selection {
+/* Choices.js customizations */
+.choices {
   font-size: 14px !important;
 }
 label {
@@ -93,7 +94,7 @@ button {
 }
 #filter {
   background-color: white;
-  padding: 0px 0px 0px 35px;
+  padding: 0 5px 0 35px;
 }
 #filter-body {
   height: 100px;
@@ -173,11 +174,13 @@ button {
   left: 0px;
   right: 0px;
 }
-.ms-container {
+/* Choices.js styling to match the previous multiselect dimensions */
+.choices {
   width: 200px !important;
 }
-.ms-container .ms-list {
-  height: 100px !important;
+.choices__list--dropdown {
+  max-height: 100px !important;
+  overflow-y: auto;
 }
 #map {
   min-height: 735px;
@@ -254,9 +257,6 @@ button {
 #filter-button {
   width: 50px;
   height: 20px;
-  position: relative;
-  bottom: 60px;
-  left: 210px;
 }
 #collapse-button {
   width: 15px;

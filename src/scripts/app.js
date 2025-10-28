@@ -1,5 +1,5 @@
 // Import CSS dependencies first (OpenLayers CSS loaded via HTML)
-import 'multiselect/css/multi-select.css';
+import 'choices.js/public/assets/styles/choices.min.css';
 
 // Import jQuery and make it globally available
 import $ from 'jquery';
@@ -9,18 +9,12 @@ globalThis.$ = globalThis.jQuery = window.$ = window.jQuery = $;
 
 // Import other non-jQuery dependencies first
 import Cookies from 'js-cookie';
+import Choices from 'choices.js';
 
 // OpenLayers is loaded via HTML script tag, so it's available as global 'ol'
 
-// Dynamically import jQuery-dependent libraries and wait for them before starting the app
-Promise.all([
-  import('multiselect/js/jquery.multi-select.js')
-]).then(() => {
-  // Now start the main application code
-  startApp();
-}).catch(err => {
-  console.error('Error loading jQuery dependencies:', err);
-});
+// Start the main application code (no more jQuery dependencies to load)
+startApp();
 
 function startApp() {
 (function() {
@@ -595,9 +589,22 @@ function startApp() {
     }
   }
 
-  for (var i = 0, ii = rayons.length; i < ii; ++i) {
-    $('#sel-rayon').multiSelect('addOption', { value: rayons[i], text: rayons[i] });
-  }
+  // Initialize Choices.js with rayons as choices
+  var selectElement = document.getElementById('sel-rayon');
+  var rayonChoices = new Choices(selectElement, {
+    removeItemButton: true,
+    searchEnabled: false,
+    placeholder: true,
+    noResultsText: 'Geen resultaten gevonden',
+    noChoicesText: 'Geen keuzes beschikbaar',
+    choices: rayons.map(function(rayon) {
+      return {
+        value: rayon,
+        label: rayon,
+        selected: selectedRayons[rayon] === true
+      };
+    })
+  });
 
   var hasRayon = function() {
     var result = false;
@@ -636,7 +643,8 @@ function startApp() {
     loadLayerInfoFromCookie();
     applyLayerVisbility();
     loadRayonInfoFromCookie();
-    applyInitialRayons();
+    // Clear all selected rayons in Choices.js
+    rayonChoices.removeActiveItems();
     setToggleImg();
     loadMelderInfoFromCookie();
     setMelderFilter();
@@ -677,35 +685,22 @@ function startApp() {
       source.changed();
     }
   });
-  $('#sel-rayon').multiSelect({
-    afterSelect: function(values) {
-      selectedRayons[values[0]] = true;
-    },
-    afterDeselect: function(values) {
-      if (values !== null) {
-        selectedRayons[values[0]] = false;
-      }
-      if (!hasRayon()) {
-        $('#filter-button-img').attr('src', 'assets/images/toggle_aan.svg');
-        filterRayon = false;
-        for (var key in sources) {
-          var source = sources[key];
-          source.changed();
-        }
+  // Add Choices.js event listeners
+  selectElement.addEventListener('addItem', function(event) {
+    selectedRayons[event.detail.value] = true;
+  });
+  
+  selectElement.addEventListener('removeItem', function(event) {
+    selectedRayons[event.detail.value] = false;
+    if (!hasRayon()) {
+      $('#filter-button-img').attr('src', 'assets/images/toggle_aan.svg');
+      filterRayon = false;
+      for (var key in sources) {
+        var source = sources[key];
+        source.changed();
       }
     }
   });
-  var applyInitialRayons = function() {
-    var initialRayons = [];
-    for (var r in selectedRayons) {
-      if (selectedRayons[r] === true) {
-        initialRayons.push(r);
-      }
-    }
-    $('#sel-rayon').multiSelect('deselect_all');
-    $('#sel-rayon').multiSelect('select', initialRayons);
-  }
-  applyInitialRayons();
 
   var map = new ol.Map({
     controls: ol.control.defaults({attribution: false}),
@@ -973,7 +968,7 @@ function startApp() {
   }
 
   var setMelderFilter = function() {
-    for (i = 0, ii = melders.length; i < ii; ++i) {
+    for (var i = 0, ii = melders.length; i < ii; ++i) {
       var checked = selectedMeldersCat[melders[i].id];
       $('#melder_' + melders[i].id).prop('checked', checked);
       if (!checked) {
