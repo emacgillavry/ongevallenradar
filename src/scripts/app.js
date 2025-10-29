@@ -594,7 +594,7 @@ function startApp() {
   var rayonChoices = new Choices(selectElement, {
     removeItemButton: true,
     searchEnabled: false,
-    placeholder: true,
+    itemSelectText: '',
     noResultsText: 'Geen resultaten gevonden',
     noChoicesText: 'Geen keuzes beschikbaar',
     choices: rayons.map(function(rayon) {
