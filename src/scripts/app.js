@@ -1,13 +1,7 @@
 // Import CSS dependencies first (OpenLayers CSS loaded via HTML)
 import 'choices.js/public/assets/styles/choices.min.css';
 
-// Import jQuery and make it globally available
-import $ from 'jquery';
-
-// Ensure jQuery is available globally before any other code runs
-globalThis.$ = globalThis.jQuery = window.$ = window.jQuery = $;
-
-// Import other non-jQuery dependencies first
+// Import dependencies
 import Cookies from 'js-cookie';
 import Choices from 'choices.js';
 
@@ -76,7 +70,7 @@ import Choices from 'choices.js';
   var cirkel;
   var loadCirkelFromCookie = function() {
     cirkel = cookieInfo ? cookieInfo.cirkel : false;
-    $('#cirkel').attr('checked', cirkel);
+    document.getElementById('cirkel').checked = cirkel;
   }
   loadCirkelFromCookie();
 
@@ -614,13 +608,14 @@ import Choices from 'choices.js';
     return result;
   };
 
-  $('#save').on('click', function(evt) {
+  document.getElementById('save').addEventListener('click', function(evt) {
     var json = {};
     json.layers = {};
-    $("#layer-body :input").each(function(){
-      var input = $(this);
-      json.layers[input.attr('id').replace('vis_', '')] = input.is(':checked');
-    });
+    var inputs = document.querySelectorAll("#layer-body input");
+    for (var i = 0; i < inputs.length; i++) {
+      var input = inputs[i];
+      json.layers[input.id.replace('vis_', '')] = input.checked;
+    }
     json.filterRayon = filterRayon;
     json.selectedRayons = selectedRayons;
     json.filterMelder = filterMelder;
@@ -632,11 +627,11 @@ import Choices from 'choices.js';
     Cookies.set(cookieName, JSON.stringify(json));
   });
 
-  $('#clear').on('click', function(evt) {
+  document.getElementById('clear').addEventListener('click', function(evt) {
     Cookies.remove(cookieName);
     loadCookie();
     loadCirkelFromCookie();
-    onChangeCirkel({target: $('#cirkel')[0]})
+    onChangeCirkel({target: document.getElementById('cirkel')})
     loadLayerInfoFromCookie();
     applyLayerVisbility();
     loadRayonInfoFromCookie();
@@ -651,27 +646,28 @@ import Choices from 'choices.js';
     setTypeFilter();
   });
 
-  $('#options').on('click', function(evt) {
-    $('#mainoptions').hide();
-    $('#secondaryoptions').show();
+  document.getElementById('options').addEventListener('click', function(evt) {
+    document.getElementById('mainoptions').style.display = 'none';
+    document.getElementById('secondaryoptions').style.display = 'block';
   });
 
-  $('#backtomain').on('click', function(evt) {
-    $('#mainoptions').show();
-    $('#secondaryoptions').hide();
+  document.getElementById('backtomain').addEventListener('click', function(evt) {
+    document.getElementById('mainoptions').style.display = 'block';
+    document.getElementById('secondaryoptions').style.display = 'none';
   });
 
   var setToggleImg = function() {
     var toggleAanImg = 'assets/images/toggle_aan.svg';
     var toggleUitImg = 'assets/images/toggle_uit.svg';
+    var filterButtonImg = document.getElementById('filter-button-img');
     if (filterRayon) {
-      $('#filter-button-img').attr('src', toggleUitImg);
+      filterButtonImg.src = toggleUitImg;
     } else {
-      $('#filter-button-img').attr('src', toggleAanImg);
+      filterButtonImg.src = toggleAanImg;
     }
   };
   setToggleImg();
-  $('#filter-button').on('click', function(evt){ 
+  document.getElementById('filter-button').addEventListener('click', function(evt){ 
     if (!hasRayon()) {
       return;
     }
@@ -690,7 +686,7 @@ import Choices from 'choices.js';
   selectElement.addEventListener('removeItem', function(event) {
     selectedRayons[event.detail.value] = false;
     if (!hasRayon()) {
-      $('#filter-button-img').attr('src', 'assets/images/toggle_aan.svg');
+      document.getElementById('filter-button-img').src = 'assets/images/toggle_aan.svg';
       filterRayon = false;
       for (var key in sources) {
         var source = sources[key];
@@ -790,15 +786,16 @@ import Choices from 'choices.js';
   var setBeepImg = function() {
     var soundOnImg = 'assets/images/sound_on.svg';
     var soundOffImg = 'assets/images/sound_off.svg';
+    var beepButtonImg = document.getElementById('beep-button-img');
     if (allowBeep) {
-      $('#beep-button-img').attr('src', soundOnImg);
+      beepButtonImg.src = soundOnImg;
     } else {
-      $('#beep-button-img').attr('src', soundOffImg);
+      beepButtonImg.src = soundOffImg;
     }
   };
   setBeepImg();
 
-  $('#beep-button').on('click', function(evt) {
+  document.getElementById('beep-button').addEventListener('click', function(evt) {
     allowBeep = !allowBeep;
     setBeepImg();
   });
@@ -915,7 +912,7 @@ import Choices from 'choices.js';
   };
 
   // melders filter
-  var melder_filter = $('#filter-melder');
+  var melder_filter = document.getElementById('filter-melder');
   var melders = [{
     id: '0',
     title: 'Politiemeldkamer',
@@ -960,16 +957,17 @@ import Choices from 'choices.js';
   };
   for (m = 0, mm = melders.length; m < mm; ++m) {
     var checked = selectedMeldersCat[melders[m].id] ? ' checked' : '';
-    melder_filter.append('<div class="pretty"><input id="melder_' + melders[m].id + '" type="checkbox" value="' + melders[m].id +  '"' + checked + '/><label><i class="mi mi-check"></i>' + melders[m].title + '</label></div><br/>');
-    $('#melder_' + melders[m].id).on('change', handleMelderFilter);
+    melder_filter.insertAdjacentHTML('beforeend', '<div class="pretty"><input id="melder_' + melders[m].id + '" type="checkbox" value="' + melders[m].id +  '"' + checked + '/><label><i class="mi mi-check"></i>' + melders[m].title + '</label></div><br/>');
+    document.getElementById('melder_' + melders[m].id).addEventListener('change', handleMelderFilter);
   }
 
   var setMelderFilter = function() {
     for (var i = 0, ii = melders.length; i < ii; ++i) {
       var checked = selectedMeldersCat[melders[i].id];
-      $('#melder_' + melders[i].id).prop('checked', checked);
+      var melderElement = document.getElementById('melder_' + melders[i].id);
+      melderElement.checked = checked;
       if (!checked) {
-        handleMelderFilter({target: $('#melder_' + melders[i].id)[0]});
+        handleMelderFilter({target: melderElement});
       }
     }
   };
@@ -984,7 +982,7 @@ import Choices from 'choices.js';
     }
   }
 
-  var typeContainer = $('#filter-type');
+  var typeContainer = document.getElementById('filter-type');
   var typeOptions = [{
     id: '0',
     title: 'Ongeval'
@@ -997,16 +995,17 @@ import Choices from 'choices.js';
 
   for (t = 0, tt = typeOptions.length; t < tt; ++t) {
     var checked = selectedTypes[typeOptions[t].id] ? ' checked' : '';
-    typeContainer.append('<div class="pretty"><input id="type_' + typeOptions[t].id + '" type="checkbox" value="' + typeOptions[t].id +  '"' + checked + '/><label><i class="mi mi-check"></i>' + typeOptions[t].title + '</label></div><br/>');
-    $('#type_' + typeOptions[t].id).on('change', handleTypeFilter);
+    typeContainer.insertAdjacentHTML('beforeend', '<div class="pretty"><input id="type_' + typeOptions[t].id + '" type="checkbox" value="' + typeOptions[t].id +  '"' + checked + '/><label><i class="mi mi-check"></i>' + typeOptions[t].title + '</label></div><br/>');
+    document.getElementById('type_' + typeOptions[t].id).addEventListener('change', handleTypeFilter);
   }
 
   var setTypeFilter = function() {
     for (t = 0, tt = typeOptions.length; t < tt; ++t) {
       var checked = selectedTypes[typeOptions[t].id];
-      $('#type_' + typeOptions[t].id).prop('checked', checked);
+      var typeElement = document.getElementById('type_' + typeOptions[t].id);
+      typeElement.checked = checked;
       if (!checked) {
-        handleTypeFilter({target: $('#type_' + typeOptions[t].id)[0]});
+        handleTypeFilter({target: typeElement});
       }
     }
   };
@@ -1022,27 +1021,30 @@ import Choices from 'choices.js';
   };
 
   var applyLayerVisbility = function() {
-    $("#layer-body :input").each(function(){
-      var input = $(this);
-      var id = input.attr('id');
+    var inputs = document.querySelectorAll("#layer-body input");
+    for (var i = 0; i < inputs.length; i++) {
+      var input = inputs[i];
+      var id = input.id;
       var visible = !!layerInfo[id.replace('vis_', '')];
-      input.attr('checked', visible);
+      input.checked = visible;
       var layer = findLayerById(id.replace('vis_', ''));
       layer.setVisible(visible);
-    });
+    }
   };
 
   // layer list control
-  var layerBody = $('#layer-body');
+  var layerBody = document.getElementById('layer-body');
   var layersArray = map.getLayers().getArray().reverse();
   for (var l = 0, ll = layersArray.length; l < ll; ++l) {
     var layer = layersArray[l];
     if (layer.get('title')) {
       var checked = layer.getVisible() ? ' checked' : '';
-      layerBody.append('<div class="pretty"><input id="vis_' + layer.get('id') + '" type="checkbox" value=""' + checked + '/><label><i class="mi mi-check"></i>' + layer.get('title') + '</label></div><br/>');
-      $('#vis_' + layer.get('id')).on('change', $.proxy(function(evt) {
-        this.setVisible(evt.target.checked);
-      }, layer));
+      layerBody.insertAdjacentHTML('beforeend', '<div class="pretty"><input id="vis_' + layer.get('id') + '" type="checkbox" value=""' + checked + '/><label><i class="mi mi-check"></i>' + layer.get('title') + '</label></div><br/>');
+      (function(currentLayer) {
+        document.getElementById('vis_' + currentLayer.get('id')).addEventListener('change', function(evt) {
+          currentLayer.setVisible(evt.target.checked);
+        });
+      })(layer);
     }
   }
 
@@ -1057,23 +1059,25 @@ import Choices from 'choices.js';
     }
   }
 
-  $('#cirkel').on('change', onChangeCirkel);
+  document.getElementById('cirkel').addEventListener('change', onChangeCirkel);
 
-  var collapsibleEl = $('#eastpanel');
-  var buttonEl =  $("#collapse-button");
+  var collapsibleEl = document.getElementById('eastpanel');
+  var buttonEl = document.getElementById('collapse-button');
+  var mapEl = document.getElementById('map');
+  var centerPanelEl = document.getElementById('centerpanel');
   var expanded = true;
-  buttonEl.click(function() {
+  buttonEl.addEventListener('click', function() {
     if (expanded) {
-      $('#map').css({width: 'calc(100% - 15px)'});
-      $('#centerpanel').css({right: '0px'});
-      collapsibleEl.css({display: 'none'});
+      mapEl.style.width = 'calc(100% - 15px)';
+      centerPanelEl.style.right = '0px';
+      collapsibleEl.style.display = 'none';
     } else {
-      $('#map').css({width: 'calc(100% - 340px)'});
-      $('#centerpanel').css({right: '325px'});
-      collapsibleEl.css({display: ''});
+      mapEl.style.width = 'calc(100% - 340px)';
+      centerPanelEl.style.right = '325px';
+      collapsibleEl.style.display = '';
     }
-    buttonEl.toggleClass('expanded');
-    buttonEl.toggleClass('collapsed');
+    buttonEl.classList.toggle('expanded');
+    buttonEl.classList.toggle('collapsed');
     expanded = !expanded;
     map.updateSize();
   });
