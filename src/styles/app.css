@@ -96,10 +96,6 @@ button {
   background-color: white;
   padding: 0 5px 0 35px;
 }
-#filter-body {
-  height: 100px;
-  position: relative;
-}
 #beep {
   background-color: white;
   padding: 0px 0px 0px 35px;
@@ -173,14 +169,6 @@ button {
   text-align:center;
   left: 0px;
   right: 0px;
-}
-/* Choices.js styling to match the previous multiselect dimensions */
-.choices {
-  width: 200px !important;
-}
-.choices__list--dropdown {
-  max-height: 100px !important;
-  overflow-y: auto;
 }
 #map {
   min-height: 735px;
