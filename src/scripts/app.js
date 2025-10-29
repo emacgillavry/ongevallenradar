@@ -13,10 +13,7 @@ import Choices from 'choices.js';
 
 // OpenLayers is loaded via HTML script tag, so it's available as global 'ol'
 
-// Start the main application code (no more jQuery dependencies to load)
-startApp();
-
-function startApp() {
+// Start the main application code
 (function() {
   var cookieName = 'ongevallenradar';
   var cookieInfo;
@@ -1084,4 +1081,3 @@ function startApp() {
   setDateTime();
   window.setInterval(reloadFeatures, 10000);
 })();
-} // End of startApp function
