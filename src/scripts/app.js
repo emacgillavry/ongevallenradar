@@ -77,7 +77,6 @@ import Choices from 'choices.js';
   var geoserverHost = import.meta.env.VITE_WFS_HOST || 'https://geoserver.stichtingimn.nl';
   var geoserverPath = import.meta.env.VITE_WFS_PATH || '/geoserver/ows';
   var geoserverUrl = geoserverHost + geoserverPath + '?';
-  var useJSONP = true;
 
   var rayons = [
     'D50',
@@ -395,31 +394,23 @@ import Choices from 'choices.js';
     }
   };
 
-  var doJSONP = function(url, success, failure, scope) {
-    var cbname = 'fn' + scope.key + Date.now();
-    var script = document.createElement('script');
-    script.src = url.replace('%output%', 'text/javascript&format_options=callback:' + cbname);
-    window[cbname] = function(jsonData) {
-      success.call(scope, jsonData);
-      delete window[cbname];
-    };
-    document.head.appendChild(script);
-  };
-
-  var doGET = function(url, success, failure, scope) {
-    var xmlhttp = new XMLHttpRequest();
-    xmlhttp.onreadystatechange = function() {
-      if (xmlhttp.readyState === 4) {
-        if (xmlhttp.status === 200) {
-          success.call(scope, xmlhttp);
-        } else if (failure) {
-          failure.call(scope, xmlhttp);
+  var fetchGeoJSON = function(url, success, failure, scope) {
+    fetch(url.replace('%output%', 'application/json'))
+      .then(function(response) {
+        if (!response.ok) {
+          throw new Error('Network response was not ok: ' + response.status);
         }
-      }
-    };
-    xmlhttp.open('GET', url, true);
-    xmlhttp.send();
-    return xmlhttp;
+        return response.json();
+      })
+      .then(function(jsonData) {
+        success.call(scope, jsonData);
+      })
+      .catch(function(error) {
+        console.error('Fetch error:', error);
+        if (failure) {
+          failure.call(scope, error);
+        }
+      });
   };
 
   var styleCache = {};
@@ -438,19 +429,19 @@ import Choices from 'choices.js';
     actueel: new ol.source.Vector({
       useSpatialIndex: false,
       strategy: ol.loadingstrategy.all,
-      url: useJSONP ? undefined : sourceUrls.actueel.replace('%output%', 'application/json'),
+      url: sourceUrls.actueel.replace('%output%', 'application/json'),
       format: geojsonFormat
     }),
     uur: new ol.source.Vector({
       useSpatialIndex: false,
       strategy: ol.loadingstrategy.all,
-      url: (useJSONP === true) ? undefined : sourceUrls.uur.replace('%output%', 'application/json'),
+      url: sourceUrls.uur.replace('%output%', 'application/json'),
       format: geojsonFormat
     }),
     vandaag: new ol.source.Vector({
       useSpatialIndex: false,
       strategy: ol.loadingstrategy.all,
-      url: (useJSONP === true) ? undefined : sourceUrls.vandaag.replace('%output%', 'application/json'),
+      url: sourceUrls.vandaag.replace('%output%', 'application/json'),
       format: geojsonFormat
     })
   };
@@ -560,23 +551,21 @@ import Choices from 'choices.js';
     })
   };
 
-  // initial load of features in case of JSONP
+  // initial load of features
   for (var key in layers) {
-    if (useJSONP) {
-      var source = sources[key];
-      if (layers[key].getVisible()) {
-        doJSONP(sourceUrls[key], function(jsonData) {
-          this.source.addFeatures(this.source.getFormat().readFeatures(jsonData));
-        }, undefined, {source: source, key: key});
-      } else {
-        layers[key].once('change:visible', function(evt) {
-          if (evt.target.getVisible()) {
-            doJSONP(sourceUrls[this.key], function(jsonData) {
-              this.source.addFeatures(this.source.getFormat().readFeatures(jsonData));
-            }, undefined, this);
-          }
-        }, {key: key, source: source});
-      }
+    var source = sources[key];
+    if (layers[key].getVisible()) {
+      fetchGeoJSON(sourceUrls[key], function(jsonData) {
+        this.source.addFeatures(this.source.getFormat().readFeatures(jsonData));
+      }, undefined, {source: source, key: key});
+    } else {
+      layers[key].once('change:visible', function(evt) {
+        if (evt.target.getVisible()) {
+          fetchGeoJSON(sourceUrls[this.key], function(jsonData) {
+            this.source.addFeatures(this.source.getFormat().readFeatures(jsonData));
+          }, undefined, this);
+        }
+      }, {key: key, source: source});
     }
   }
 
@@ -896,17 +885,10 @@ import Choices from 'choices.js';
     for (var key in layers) {
       if (layers[key].getVisible() === true) {
         var source = sources[key];
-        if (useJSONP) {
-          doJSONP(sourceUrls[key], function(jsonData) {
-            var features = this.source.getFormat().readFeatures(jsonData);
-            handleNewFeatures(this, features);
-          }, undefined, {source: source, key: key});
-        } else {
-          doGET(sourceUrls[key].replace('%output%', 'application/json'), function(xmlhttp) {
-            var features = this.source.getFormat().readFeatures(xmlhttp.responseText);
-            handleNewFeatures(this, features);
-          }, undefined, {source: source, key: key});
-        }
+        fetchGeoJSON(sourceUrls[key], function(jsonData) {
+          var features = this.source.getFormat().readFeatures(jsonData);
+          handleNewFeatures(this, features);
+        }, undefined, {source: source, key: key});
       }
     }
   };
