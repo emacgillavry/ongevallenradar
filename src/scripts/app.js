@@ -9,34 +9,38 @@ import Choices from 'choices.js';
 
 // Start the main application code
 (function() {
-  var cookieName = 'ongevallenradar';
-  var cookieInfo;
-  var loadCookie = function() {
-    var cookieValue = Cookies.get(cookieName);
+  // Cookie config
+  const cookieName = 'ongevallenradar';
+  let cookieInfo;
+  const loadCookie = function() {
+    const cookieValue = Cookies.get(cookieName);
     cookieInfo = cookieValue ? JSON.parse(cookieValue) : null;
   }
   loadCookie();
-  var filterType;
-  var selectedTypes;
-  var defaultTypes = {
+  // Filter types
+  let filterType;
+  let selectedTypes;
+  const defaultTypes = {
     0: true,
     1: true
   };
-  var loadTypesFromCookie = function() {
+  const loadTypesFromCookie = function() {
     filterType = cookieInfo ? cookieInfo.filterType : false;
     selectedTypes = cookieInfo ? cookieInfo.selectedTypes : defaultTypes;
   }
   loadTypesFromCookie();
 
-  var allowBeep;
-  var loadBeepFromCookie = function() {
+  // Beep configuration
+  let allowBeep;
+  const loadBeepFromCookie = function() {
     allowBeep = cookieInfo ? cookieInfo.allowBeep : true;
   }
   loadBeepFromCookie();
-  var selectedMelders = {};
-  var selectedMeldersCat;
-  var filterMelder;
-  var defaultMeldersCat = {
+  // Melder configuration
+  const selectedMelders = {};
+  let selectedMeldersCat;
+  let filterMelder;
+  const defaultMeldersCat = {
     0: true,
     1: true,
     2: true,
@@ -44,41 +48,42 @@ import Choices from 'choices.js';
     4: true,
     5: true
   };
-  var loadMelderInfoFromCookie = function() {
+  const loadMelderInfoFromCookie = function() {
     selectedMeldersCat = cookieInfo ? cookieInfo.selectedMeldersCat : defaultMeldersCat;
     filterMelder = cookieInfo ? cookieInfo.filterMelder : false;
   }
   loadMelderInfoFromCookie();
-  var selectedRayons;
-  var filterRayon;
-  var loadRayonInfoFromCookie = function() {
+  let selectedRayons;
+  let filterRayon;
+  const loadRayonInfoFromCookie = function() {
     selectedRayons = cookieInfo ? cookieInfo.selectedRayons : {};
     filterRayon = cookieInfo ? cookieInfo.filterRayon : false;
   }
   loadRayonInfoFromCookie();
 
-  var defaultLayerInfo = {
+  const defaultLayerInfo = {
     uur: true,
     actueel: true
   };
-  var layerInfo;
-  var loadLayerInfoFromCookie = function() {
+  let layerInfo;
+  const loadLayerInfoFromCookie = function() {
     layerInfo = cookieInfo ? cookieInfo.layers : defaultLayerInfo;
   }
   loadLayerInfoFromCookie();
 
-  var cirkel;
-  var loadCirkelFromCookie = function() {
+  // Cirkel configuration
+  let cirkel;
+  const loadCirkelFromCookie = function() {
     cirkel = cookieInfo ? cookieInfo.cirkel : false;
     document.getElementById('cirkel').checked = cirkel;
   }
   loadCirkelFromCookie();
 
-  var geoserverHost = import.meta.env.VITE_WFS_HOST || 'https://geoserver.stichtingimn.nl';
-  var geoserverPath = import.meta.env.VITE_WFS_PATH || '/geoserver/ows';
-  var geoserverUrl = geoserverHost + geoserverPath + '?';
+  const geoserverHost = import.meta.env.VITE_WFS_HOST || 'https://geoserver.stichtingimn.nl';
+  const geoserverPath = import.meta.env.VITE_WFS_PATH || '/geoserver/ows';
+  const geoserverUrl = `${geoserverHost}${geoserverPath}?`;
 
-  var rayons = [
+  const rayons = [
     'D50',
     'D51',
     'D52',
@@ -305,7 +310,7 @@ import Choices from 'choices.js';
     'ZH163a'
   ];
 
-  var imageStyles = {
+  const imageStyles = {
     actueel: {
       een: {
         normal: new ol.style.RegularShape({
@@ -394,38 +399,33 @@ import Choices from 'choices.js';
     }
   };
 
-  var fetchGeoJSON = function(url, success, failure, scope) {
-    fetch(url.replace('%output%', 'application/json'))
-      .then(function(response) {
-        if (!response.ok) {
-          throw new Error('Network response was not ok: ' + response.status);
-        }
-        return response.json();
-      })
-      .then(function(jsonData) {
-        success.call(scope, jsonData);
-      })
-      .catch(function(error) {
-        console.error('Fetch error:', error);
-        if (failure) {
-          failure.call(scope, error);
-        }
-      });
+  const fetchGeoJSON = async function(url, scope) {
+    try {
+      const response = await fetch(url.replace('%output%', 'application/json'));
+      if (!response.ok) {
+        throw new Error(`Network response was not ok: ${response.status}`);
+      }
+      const jsonData = await response.json();
+      return { success: true, data: jsonData, scope: scope };
+    } catch (error) {
+      console.error('Fetch error:', error);
+      return { success: false, error: error, scope: scope };
+    }
   };
 
-  var styleCache = {};
-  var styleCacheUur = {};
-  var styleCacheVandaag = {};
+  let styleCache = {};
+  let styleCacheUur = {};
+  let styleCacheVandaag = {};
 
-  var geojsonFormat = new ol.format.GeoJSON();
+  const geojsonFormat = new ol.format.GeoJSON();
 
-  var sourceUrls = {
-    actueel: geoserverUrl + 'service=WFS&request=GetFeature&typename=meldingen:actueel&version=1.1.0&srsname=EPSG:3857&outputFormat=%output%',
-    uur: geoserverUrl + 'service=WFS&request=GetFeature&typename=meldingen:uur&version=1.1.0&srsname=EPSG:3857&outputFormat=%output%',
-    vandaag: geoserverUrl + 'service=WFS&request=GetFeature&typename=meldingen:vandaag&version=1.1.0&srsname=EPSG:3857&outputFormat=%output%'
+  const sourceUrls = {
+    actueel: `${geoserverUrl}service=WFS&request=GetFeature&typename=meldingen:actueel&version=1.1.0&srsname=EPSG:3857&outputFormat=%output%`,
+    uur: `${geoserverUrl}service=WFS&request=GetFeature&typename=meldingen:uur&version=1.1.0&srsname=EPSG:3857&outputFormat=%output%`,
+    vandaag: `${geoserverUrl}service=WFS&request=GetFeature&typename=meldingen:vandaag&version=1.1.0&srsname=EPSG:3857&outputFormat=%output%`
   };
 
-  var sources = {
+  const sources = {
     actueel: new ol.source.Vector({
       useSpatialIndex: false,
       strategy: ol.loadingstrategy.all,
@@ -446,39 +446,51 @@ import Choices from 'choices.js';
     })
   };
 
-  var filterFunction = function(feature) {
-    var rayon = feature.get('rayon');
-    if (filterRayon === true && selectedRayons[rayon] !== true) {
-      return false;
-    }
-    var melder = feature.get('melder').toLowerCase();
-    if (filterMelder === true && selectedMelders[melder] === false) {
-      return false;
-    }
-    var incidentType = feature.get('incident_type');
-    if (filterType === true) {
-      if (selectedTypes['0'] === false && selectedTypes['1'] === true) {
-        return incidentType !== 'Ongeval';
-      } else if (selectedTypes['0'] === true && selectedTypes['1'] === false) {
-        return incidentType === 'Ongeval';
-      } else {
-        return selectedTypes['0'] && selectedTypes['1'];
+  const filterFunction = (feature) => {
+    // Rayon filter
+    if (filterRayon) {
+      const rayon = feature.get('rayon');
+      if (!selectedRayons[rayon]) {
+        return false;
       }
     }
+    
+    // Melder filter  
+    if (filterMelder) {
+      const melder = feature.get('melder').toLowerCase();
+      if (selectedMelders[melder] === false) {
+        return false;
+      }
+    }
+    
+    // Type filter
+    if (filterType) {
+      const incidentType = feature.get('incident_type');
+      const showOngevallen = selectedTypes['0'];
+      const showOverig = selectedTypes['1'];
+      
+      if (!showOngevallen && !showOverig) return false;
+      if (showOngevallen && !showOverig) return incidentType === 'Ongeval';
+      if (!showOngevallen && showOverig) return incidentType !== 'Ongeval';
+      // Both selected - show all
+      return true;
+    }
+    
+    return true;
   };
 
-  var layers = {
+  const layers = {
     uur: new ol.layer.Vector({
       zIndex: 4,
       visible: !!layerInfo.uur,
       id: 'uur',
       title: 'Meldingen laatste zestig minuten',
       style: function(feature, resolution) {
-        var showLabel = resolution <= 78;
+        const showLabel = resolution <= 78;
         if (filterFunction(feature) === false) {
           return null;
         }
-        var text = feature.get('bps') + '\n' + feature.get('tijdstip') + '\n' + feature.get('incident_type');
+        const text = feature.get('bps') + '\n' + feature.get('tijdstip') + '\n' + feature.get('incident_type');
         if (!styleCacheUur[showLabel + '|' + text]) {
           styleCacheUur[showLabel + '|' + text]= new ol.style.Style({
             text: showLabel ? new ol.style.Text({
@@ -501,11 +513,11 @@ import Choices from 'choices.js';
       id: 'vandaag',
       title: 'Meldingen vandaag',
       style: function(feature, resolution) {
-        var showLabel = resolution <= 78;
+        const showLabel = resolution <= 78;
         if (filterFunction(feature) === false) {
           return null;
         }
-        var text = feature.get('bps') + '\n' + feature.get('tijdstip') + '\n' + feature.get('incident_type');
+        const text = feature.get('bps') + '\n' + feature.get('tijdstip') + '\n' + feature.get('incident_type');
         if (!styleCacheVandaag[showLabel + '|' + text]) {
           styleCacheVandaag[showLabel + '|' + text]= new ol.style.Style({
             text: showLabel ? new ol.style.Text({
@@ -528,11 +540,11 @@ import Choices from 'choices.js';
       id: 'actueel',
       title: 'Actuele meldingen',
       style: function(feature, resolution) {
-        var nummer = feature.get('nummer');
+        const nummer = feature.get('nummer');
         if (filterFunction(feature) === false) {
           return null;
         }
-        var text = feature.get('bps') + '\n' + feature.get('tijdstip') + '\n' + feature.get('incident_type');
+        const text = feature.get('bps') + '\n' + feature.get('tijdstip') + '\n' + feature.get('incident_type');
         if (!styleCache[nummer + '|' + text]) {
           styleCache[nummer + '|' + text] = new ol.style.Style({
             text: new ol.style.Text({
@@ -552,26 +564,30 @@ import Choices from 'choices.js';
   };
 
   // initial load of features
-  for (var key in layers) {
-    var source = sources[key];
+  const loadLayerData = async (key, source) => {
+    const result = await fetchGeoJSON(sourceUrls[key], {source: source, key: key});
+    if (result.success) {
+      const features = result.scope.source.getFormat().readFeatures(result.data);
+      result.scope.source.addFeatures(features);
+    }
+  };
+
+  for (const key in layers) {
+    const source = sources[key];
     if (layers[key].getVisible()) {
-      fetchGeoJSON(sourceUrls[key], function(jsonData) {
-        this.source.addFeatures(this.source.getFormat().readFeatures(jsonData));
-      }, undefined, {source: source, key: key});
+      loadLayerData(key, source);
     } else {
-      layers[key].once('change:visible', function(evt) {
+      layers[key].once('change:visible', (evt) => {
         if (evt.target.getVisible()) {
-          fetchGeoJSON(sourceUrls[this.key], function(jsonData) {
-            this.source.addFeatures(this.source.getFormat().readFeatures(jsonData));
-          }, undefined, this);
+          loadLayerData(key, source);
         }
-      }, {key: key, source: source});
+      });
     }
   }
 
   // Initialize Choices.js with rayons as choices
-  var selectElement = document.getElementById('sel-rayon');
-  var rayonChoices = new Choices(selectElement, {
+  const selectElement = document.getElementById('sel-rayon');
+  const rayonChoices = new Choices(selectElement, {
     removeItemButton: true,
     searchEnabled: false,
     itemSelectText: '',
@@ -586,23 +602,14 @@ import Choices from 'choices.js';
     })
   });
 
-  var hasRayon = function() {
-    var result = false;
-    for (var rayon in selectedRayons) {
-      if (selectedRayons[rayon] === true) {
-        result = true;
-        break;
-      }
-    }
-    return result;
-  };
+  const hasRayon = () => Object.values(selectedRayons).some(selected => selected === true);
 
   document.getElementById('save').addEventListener('click', function(evt) {
-    var json = {};
+    const json = {};
     json.layers = {};
-    var inputs = document.querySelectorAll("#layer-body input");
-    for (var i = 0; i < inputs.length; i++) {
-      var input = inputs[i];
+    const inputs = document.querySelectorAll("#layer-body input");
+    for (let i = 0; i < inputs.length; i++) {
+      const input = inputs[i];
       json.layers[input.id.replace('vis_', '')] = input.checked;
     }
     json.filterRayon = filterRayon;
@@ -645,15 +652,11 @@ import Choices from 'choices.js';
     document.getElementById('secondaryoptions').style.display = 'none';
   });
 
-  var setToggleImg = function() {
-    var toggleAanImg = 'assets/images/toggle_aan.svg';
-    var toggleUitImg = 'assets/images/toggle_uit.svg';
-    var filterButtonImg = document.getElementById('filter-button-img');
-    if (filterRayon) {
-      filterButtonImg.src = toggleUitImg;
-    } else {
-      filterButtonImg.src = toggleAanImg;
-    }
+  const setToggleImg = () => {
+    const toggleAanImg = 'assets/images/toggle_aan.svg';
+    const toggleUitImg = 'assets/images/toggle_uit.svg';
+    const filterButtonImg = document.getElementById('filter-button-img');
+    filterButtonImg.src = filterRayon ? toggleUitImg : toggleAanImg;
   };
   setToggleImg();
   document.getElementById('filter-button').addEventListener('click', function(evt){ 
@@ -662,8 +665,8 @@ import Choices from 'choices.js';
     }
     filterRayon = !filterRayon;
     setToggleImg();
-    for (var key in sources) {
-      var source = sources[key];
+    for (const key in sources) {
+      const source = sources[key];
       source.changed();
     }
   });
@@ -677,14 +680,14 @@ import Choices from 'choices.js';
     if (!hasRayon()) {
       document.getElementById('filter-button-img').src = 'assets/images/toggle_aan.svg';
       filterRayon = false;
-      for (var key in sources) {
-        var source = sources[key];
+      for (const key in sources) {
+        const source = sources[key];
         source.changed();
       }
     }
   });
 
-  var map = new ol.Map({
+  const map = new ol.Map({
     controls: ol.control.defaults({attribution: false}),
     layers: [
       new ol.layer.Tile({
@@ -731,9 +734,9 @@ import Choices from 'choices.js';
     view: new ol.View({ minResolution: 0.5971642834779395, maxResolution: 611.49622628141, center: [570000, 6817000], zoom: 1})
   });
 
-  var container = document.getElementById('popup');
-  var content = document.getElementById('popup-content');
-  var closer = document.getElementById('popup-closer');
+  const container = document.getElementById('popup');
+  const content = document.getElementById('popup-content');
+  const closer = document.getElementById('popup-closer');
 
   closer.onclick = function() {
     overlay.setPosition(undefined);
@@ -741,7 +744,7 @@ import Choices from 'choices.js';
     return false;
   };
 
-  var overlay = new ol.Overlay({
+  const overlay = new ol.Overlay({
     element: container,
     autoPan: true,
     autoPanAnimation: {
@@ -752,12 +755,12 @@ import Choices from 'choices.js';
   map.addOverlay(overlay);
 
   map.on('click', function(evt) {
-    var pixel = map.getEventPixel(evt.originalEvent);
+    const pixel = map.getEventPixel(evt.originalEvent);
     overlay.setPosition(undefined);
     map.forEachFeatureAtPixel(pixel, function(feature, layer) {
       if (feature && layer !== null) {
-        var coordinate = evt.coordinate;
-        var html = '<table class="table"><tbody>';
+        const coordinate = evt.coordinate;
+        let html = '<table class="table"><tbody>';
         html += '<tr><td>IM nummer</td><td>' + feature.get('meldnr') + '</td></tr>';
         html += '<tr><td>Locatie</td><td>' + feature.get('bps') + '</td></tr>';
         html += '<tr><td>Tijdstip</td><td>' + feature.get('tijdstip') + '</td></tr>';
@@ -772,15 +775,11 @@ import Choices from 'choices.js';
     });
   });
 
-  var setBeepImg = function() {
-    var soundOnImg = 'assets/images/sound_on.svg';
-    var soundOffImg = 'assets/images/sound_off.svg';
-    var beepButtonImg = document.getElementById('beep-button-img');
-    if (allowBeep) {
-      beepButtonImg.src = soundOnImg;
-    } else {
-      beepButtonImg.src = soundOffImg;
-    }
+  const setBeepImg = () => {
+    const soundOnImg = 'assets/images/sound_on.svg';
+    const soundOffImg = 'assets/images/sound_off.svg';
+    const beepButtonImg = document.getElementById('beep-button-img');
+    beepButtonImg.src = allowBeep ? soundOnImg : soundOffImg;
   };
   setBeepImg();
 
@@ -788,10 +787,10 @@ import Choices from 'choices.js';
     allowBeep = !allowBeep;
     setBeepImg();
   });
-  var beep = function() {
-    var sound = new Audio("data:audio/wav;base64,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qJrx4KOQjahZxWbcZgztj2c49nKmkId44S71j0c8eV9yDK6uPRzx5X18eDvjvQ6yKo9ZSS6l//8elePK/Lf//IInrOF/FvDoADYAGBMGb7FtErm5MXMlmPAJQVgWta7Zx2go+8xJ0UiCb8LHHdftWyLJE0QIAIsI+UbXu67dZMjmgDGCGl1H+vpF4NSDckSIkk7Vd+sxEhBQMRU8j/12UIRhzSaUdQ+rQU5kGeFxm+hb1oh6pWWmv3uvmReDl0UnvtapVaIzo1jZbf/pD6ElLqSX+rUmOQNpJFa/r+sa4e/pBlAABoAAAAA3CUgShLdGIxsY7AUABPRrgCABdDuQ5GC7DqPQCgbbJUAoRSUj+NIEig0YfyWUho1VBBBA//uQZB4ABZx5zfMakeAAAAmwAAAAF5F3P0w9GtAAACfAAAAAwLhMDmAYWMgVEG1U0FIGCBgXBXAtfMH10000EEEEEECUBYln03TTTdNBDZopopYvrTTdNa325mImNg3TTPV9q3pmY0xoO6bv3r00y+IDGid/9aaaZTGMuj9mpu9Mpio1dXrr5HERTZSmqU36A3CumzN/9Robv/Xx4v9ijkSRSNLQhAWumap82WRSBUqXStV/YcS+XVLnSS+WLDroqArFkMEsAS+eWmrUzrO0oEmE40RlMZ5+ODIkAyKAGUwZ3mVKmcamcJnMW26MRPgUw6j+LkhyHGVGYjSUUKNpuJUQoOIAyDvEyG8S5yfK6dhZc0Tx1KI/gviKL6qvvFs1+bWtaz58uUNnryq6kt5RzOCkPWlVqVX2a/EEBUdU1KrXLf40GoiiFXK///qpoiDXrOgqDR38JB0bw7SoL+ZB9o1RCkQjQ2CBYZKd/+VJxZRRZlqSkKiws0WFxUyCwsKiMy7hUVFhIaCrNQsKkTIsLivwKKigsj8XYlwt/WKi2N4d//uQRCSAAjURNIHpMZBGYiaQPSYyAAABLAAAAAAAACWAAAAApUF/Mg+0aohSIRobBAsMlO//Kk4soosy1JSFRYWaLC4qZBYWFRGZdwqKiwkNBVmoWFSJkWFxX4FFRQWR+LsS4W/rFRb/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////VEFHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU291bmRib3kuZGUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMjAwNGh0dHA6Ly93d3cuc291bmRib3kuZGUAAAAAAAAAACU=");
+  const beep = function() {
+    const sound = new Audio("data:audio/wav;base64,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qJrx4KOQjahZxWbcZgztj2c49nKmkId44S71j0c8eV9yDK6uPRzx5X18eDvjvQ6yKo9ZSS6l//8elePK/Lf//IInrOF/FvDoADYAGBMGb7FtErm5MXMlmPAJQVgWta7Zx2go+8xJ0UiCb8LHHdftWyLJE0QIAIsI+UbXu67dZMjmgDGCGl1H+vpF4NSDckSIkk7Vd+sxEhBQMRU8j/12UIRhzSaUdQ+rQU5kGeFxm+hb1oh6pWWmv3uvmReDl0UnvtapVaIzo1jZbf/pD6ElLqSX+rUmOQNpJFa/r+sa4e/pBlAABoAAAAA3CUgShLdGIxsY7AUABPRrgCABdDuQ5GC7DqPQCgbbJUAoRSUj+NIEig0YfyWUho1VBBBA//uQZB4ABZx5zfMakeAAAAmwAAAAF5F3P0w9GtAAACfAAAAAwLhMDmAYWMgVEG1U0FIGCBgXBXAtfMH10000EEEEEECUBYln03TTTdNBDZopopYvrTTdNa325mImNg3TTPV9q3pmY0xoO6bv3r00y+IDGid/9aaaZTGMuj9mpu9Mpio1dXrr5HERTZSmqU36A3CumzN/9Robv/Xx4v9ijkSRSNLQhAWumap82WRSBUqXStV/YcS+XVLnSS+WLDroqArFkMEsAS+eWmrUzrO0oEmE40RlMZ5+ODIkAyKAGUwZ3mVKmcamcJnMW26MRPgUw6j+LkhyHGVGYjSUUKNpuJUQoOIAyDvEyG8S5yfK6dhZc0Tx1KI/gviKL6qvvFs1+bWtaz58uUNnryq6kt5RzOCkPWlVqVX2a/EEBUdU1KrXLf40GoiiFXK///qpoiDXrOgqDR38JB0bw7SoL+ZB9o1RCkQjQ2CBYZKd/+VJxZRRZlqSkKiws0WFxUyCwsKiMy7hUVFhIaCrNQsKkTIsLivwKKigsj8XYlwt/WKi2N4d//uQRCSAAjURNIHpMZBGYiaQPSYyAAABLAAAAAAAACWAAAAApUF/Mg+0aohSIRobBAsMlO//Kk4soosy1JSFRYWaLC4qZBYWFRGZdwqKiwkNBVmoWFSJkWFxX4FFRQWR+LsS4W/rFRb/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////VEFHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU291bmRib3kuZGUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMjAwNGh0dHA6Ly93d3cuc291bmRib3kuZGUAAAAAAAAAACU=");
     // Handle autoplay policy - browsers require user interaction before playing audio
-    var playPromise = sound.play();
+    const playPromise = sound.play();
     
     if (playPromise !== undefined) {
       playPromise.catch(function(error) {
@@ -802,9 +801,9 @@ import Choices from 'choices.js';
     }
   };
 
-  var sourceHasFeature = function(source, feature) {
-    var sourceFeatures = source.getFeatures();
-    for (var i = 0, ii = sourceFeatures.length; i < ii; ++i) {
+  const sourceHasFeature = function(source, feature) {
+    const sourceFeatures = source.getFeatures();
+    for (let i = 0, ii = sourceFeatures.length; i < ii; ++i) {
       if (feature.get('meldnr') === sourceFeatures[i].get('meldnr')) {
         return true;
       }
@@ -812,13 +811,13 @@ import Choices from 'choices.js';
     return false;
   };
 
-  var getRemove = function(source, features) {
-    var sourceFeatures = source.getFeatures();
-    var removeList = [];
-    for (var i = 0, ii = sourceFeatures.length; i < ii; ++i) {
-      var feature = sourceFeatures[i];
-      var remove = true;
-      for (var j = 0, jj = features.length; j < jj; ++j) {
+  const getRemove = function(source, features) {
+    const sourceFeatures = source.getFeatures();
+    const removeList = [];
+    for (let i = 0, ii = sourceFeatures.length; i < ii; ++i) {
+      const feature = sourceFeatures[i];
+      let remove = true;
+      for (let j = 0, jj = features.length; j < jj; ++j) {
         if (feature.get('meldnr') === features[j].get('meldnr')) {
           remove = false;
         }
@@ -830,13 +829,13 @@ import Choices from 'choices.js';
     return removeList;
   };
 
-  var handleNewFeatures = function(config, features) {
-    var doBeep = false;
-    var key = config.key;
-    var source = config.source;
-    var i, ii;
+  const handleNewFeatures = function(config, features) {
+    let doBeep = false;
+    const key = config.key;
+    const source = config.source;
+    let i, ii;
     for (i = 0, ii = features.length; i < ii; ++i) {
-      var feature = features[i];
+      const feature = features[i];
       if (!sourceHasFeature(source, feature)) {
         // only beep for actueel
         doBeep = (key === 'actueel');
@@ -857,21 +856,20 @@ import Choices from 'choices.js';
     source.addFeatures(features);
   };
 
-  var formatDate = function(date) {
-    return date.getDate() + '-' + (date.getMonth() + 1) + '-' + date.getFullYear();
+  const formatDate = (date) => {
+    return `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;
   };
 
-  var formatHour = function(date) {
-    var hours = date.getHours();
-    var minutes = date.getMinutes();
-    minutes = minutes < 10 ? '0' + minutes : minutes;
-    return hours + ':' + minutes;
+  const formatHour = (date) => {
+    const hours = date.getHours();
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
   };
 
-  var setDateTime = function() {
-    var dateElement = document.getElementById('date');
-    var hourElement = document.getElementById('hour');
-    var date = new Date();
+  const setDateTime = function() {
+    const dateElement = document.getElementById('date');
+    const hourElement = document.getElementById('hour');
+    const date = new Date();
     if (dateElement) {
       dateElement.innerHTML = formatDate(date);
     }
@@ -880,22 +878,32 @@ import Choices from 'choices.js';
     }
   };
 
-  var reloadFeatures = function() {
+  const reloadFeatures = async () => {
     setDateTime();
-    for (var key in layers) {
-      if (layers[key].getVisible() === true) {
-        var source = sources[key];
-        fetchGeoJSON(sourceUrls[key], function(jsonData) {
-          var features = this.source.getFormat().readFeatures(jsonData);
-          handleNewFeatures(this, features);
-        }, undefined, {source: source, key: key});
+    
+    const loadPromises = [];
+    for (const key in layers) {
+      if (layers[key].getVisible()) {
+        const source = sources[key];
+        loadPromises.push(
+          fetchGeoJSON(sourceUrls[key], {source: source, key: key})
+            .then(result => {
+              if (result.success) {
+                const features = result.scope.source.getFormat().readFeatures(result.data);
+                handleNewFeatures(result.scope, features);
+              }
+            })
+        );
       }
     }
+    
+    // Wait for all layers to load
+    await Promise.all(loadPromises);
   };
 
   // melders filter
-  var melder_filter = document.getElementById('filter-melder');
-  var melders = [{
+  const melder_filter = document.getElementById('filter-melder');
+  const melders = [{
     id: '0',
     title: 'Politiemeldkamer',
     items: ['Politiemeldkamer', 'KLPD']
@@ -920,33 +928,33 @@ import Choices from 'choices.js';
     title: 'Onbekend',
     items: ['Overig', 'Wegbeheerder']
   }];
-  var m, mm;
-  var handleMelderFilter = function(evt) {
+  let m, mm;
+  const handleMelderFilter = function(evt) {
     for (m = 0, mm = melders.length; m < mm; ++m) {
       if (melders[m].id === evt.target.value) {
         selectedMeldersCat[evt.target.value] = evt.target.checked;
-        for (var itemI = 0, itemII = melders[m].items.length; itemI < itemII; ++itemI) {
+        for (let itemI = 0, itemII = melders[m].items.length; itemI < itemII; ++itemI) {
           selectedMelders[melders[m].items[itemI].toLowerCase()] = evt.target.checked;
         }
         break;
       }
     }
     filterMelder = true;
-    for (var key in sources) {
-      var source = sources[key];
+    for (const key in sources) {
+      const source = sources[key];
       source.changed();
     }
   };
   for (m = 0, mm = melders.length; m < mm; ++m) {
-    var checked = selectedMeldersCat[melders[m].id] ? ' checked' : '';
+    const checked = selectedMeldersCat[melders[m].id] ? ' checked' : '';
     melder_filter.insertAdjacentHTML('beforeend', '<div class="pretty"><input id="melder_' + melders[m].id + '" type="checkbox" value="' + melders[m].id +  '"' + checked + '/><label><i class="mi mi-check"></i>' + melders[m].title + '</label></div><br/>');
     document.getElementById('melder_' + melders[m].id).addEventListener('change', handleMelderFilter);
   }
 
-  var setMelderFilter = function() {
-    for (var i = 0, ii = melders.length; i < ii; ++i) {
-      var checked = selectedMeldersCat[melders[i].id];
-      var melderElement = document.getElementById('melder_' + melders[i].id);
+  const setMelderFilter = function() {
+    for (let i = 0, ii = melders.length; i < ii; ++i) {
+      const checked = selectedMeldersCat[melders[i].id];
+      const melderElement = document.getElementById('melder_' + melders[i].id);
       melderElement.checked = checked;
       if (!checked) {
         handleMelderFilter({target: melderElement});
@@ -955,17 +963,17 @@ import Choices from 'choices.js';
   };
   setMelderFilter();
 
-  var handleTypeFilter = function(evt) {
+  const handleTypeFilter = function(evt) {
     selectedTypes[evt.target.value] = evt.target.checked;
     filterType = true;
-    for (var key in sources) {
-      var source = sources[key];
+    for (const key in sources) {
+      const source = sources[key];
       source.changed();
     }
   }
 
-  var typeContainer = document.getElementById('filter-type');
-  var typeOptions = [{
+  const typeContainer = document.getElementById('filter-type');
+  const typeOptions = [{
     id: '0',
     title: 'Ongeval'
   }, {
@@ -973,18 +981,18 @@ import Choices from 'choices.js';
     title: 'Pech en overig'
   }];
 
-  var t, tt;
+  let t, tt;
 
   for (t = 0, tt = typeOptions.length; t < tt; ++t) {
-    var checked = selectedTypes[typeOptions[t].id] ? ' checked' : '';
+    const checked = selectedTypes[typeOptions[t].id] ? ' checked' : '';
     typeContainer.insertAdjacentHTML('beforeend', '<div class="pretty"><input id="type_' + typeOptions[t].id + '" type="checkbox" value="' + typeOptions[t].id +  '"' + checked + '/><label><i class="mi mi-check"></i>' + typeOptions[t].title + '</label></div><br/>');
     document.getElementById('type_' + typeOptions[t].id).addEventListener('change', handleTypeFilter);
   }
 
-  var setTypeFilter = function() {
+  const setTypeFilter = function() {
     for (t = 0, tt = typeOptions.length; t < tt; ++t) {
-      var checked = selectedTypes[typeOptions[t].id];
-      var typeElement = document.getElementById('type_' + typeOptions[t].id);
+      const checked = selectedTypes[typeOptions[t].id];
+      const typeElement = document.getElementById('type_' + typeOptions[t].id);
       typeElement.checked = checked;
       if (!checked) {
         handleTypeFilter({target: typeElement});
@@ -993,34 +1001,34 @@ import Choices from 'choices.js';
   };
   setTypeFilter();
 
-  var findLayerById = function(id) {
-    var layersArray = map.getLayers().getArray()
-    for (var i = 0, ii = layersArray.length; i < ii; ++i) {
+  const findLayerById = function(id) {
+    const layersArray = map.getLayers().getArray()
+    for (let i = 0, ii = layersArray.length; i < ii; ++i) {
       if (layersArray[i].get('id') === id) {
         return layersArray[i];
       }
     }
   };
 
-  var applyLayerVisbility = function() {
-    var inputs = document.querySelectorAll("#layer-body input");
-    for (var i = 0; i < inputs.length; i++) {
-      var input = inputs[i];
-      var id = input.id;
-      var visible = !!layerInfo[id.replace('vis_', '')];
+  const applyLayerVisbility = function() {
+    const inputs = document.querySelectorAll("#layer-body input");
+    for (let i = 0; i < inputs.length; i++) {
+      const input = inputs[i];
+      const id = input.id;
+      const visible = !!layerInfo[id.replace('vis_', '')];
       input.checked = visible;
-      var layer = findLayerById(id.replace('vis_', ''));
+      const layer = findLayerById(id.replace('vis_', ''));
       layer.setVisible(visible);
     }
   };
 
   // layer list control
-  var layerBody = document.getElementById('layer-body');
-  var layersArray = map.getLayers().getArray().reverse();
-  for (var l = 0, ll = layersArray.length; l < ll; ++l) {
-    var layer = layersArray[l];
+  const layerBody = document.getElementById('layer-body');
+  const layersArray = map.getLayers().getArray().reverse();
+  for (let l = 0, ll = layersArray.length; l < ll; ++l) {
+    const layer = layersArray[l];
     if (layer.get('title')) {
-      var checked = layer.getVisible() ? ' checked' : '';
+      const checked = layer.getVisible() ? ' checked' : '';
       layerBody.insertAdjacentHTML('beforeend', '<div class="pretty"><input id="vis_' + layer.get('id') + '" type="checkbox" value=""' + checked + '/><label><i class="mi mi-check"></i>' + layer.get('title') + '</label></div><br/>');
       (function(currentLayer) {
         document.getElementById('vis_' + currentLayer.get('id')).addEventListener('change', function(evt) {
@@ -1030,24 +1038,24 @@ import Choices from 'choices.js';
     }
   }
 
-  var onChangeCirkel = function(evt) {
+  const onChangeCirkel = function(evt) {
     cirkel = evt.target.checked;
     // clear the style caches
     styleCache = {};
     styleCacheUur = {};
     styleCacheVandaag = {};
-    for (var key in sources) {
+    for (const key in sources) {
       sources[key].changed();
     }
   }
 
   document.getElementById('cirkel').addEventListener('change', onChangeCirkel);
 
-  var collapsibleEl = document.getElementById('eastpanel');
-  var buttonEl = document.getElementById('collapse-button');
-  var mapEl = document.getElementById('map');
-  var centerPanelEl = document.getElementById('centerpanel');
-  var expanded = true;
+  const collapsibleEl = document.getElementById('eastpanel');
+  const buttonEl = document.getElementById('collapse-button');
+  const mapEl = document.getElementById('map');
+  const centerPanelEl = document.getElementById('centerpanel');
+  let expanded = true;
   buttonEl.addEventListener('click', function() {
     if (expanded) {
       mapEl.style.width = 'calc(100% - 15px)';
