@@ -5,7 +5,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 // Import dependencies
 import Cookies from 'js-cookie';
 import Choices from 'choices.js';
-import { Map, Popup, NavigationControl } from 'maplibre-gl';
+import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
 // Sprite uses absolute URL (MapLibre requirement) - loads /sprite.png and /sprite.json automatically
 
 // Start the main application code
@@ -783,8 +783,7 @@ import { Map, Popup, NavigationControl } from 'maplibre-gl';
       'osm': {
         type: 'raster',
         tiles: [import.meta.env.VITE_TILE_SERVER_URL_TEMPLATE || 'https://kaartserver.incidentcentrale.nl/{z}/{x}/{y}.png'],
-        tileSize: 256,
-        attribution: '© OpenStreetMap contributors'
+        tileSize: 256
       }
     };
 
@@ -853,7 +852,7 @@ import { Map, Popup, NavigationControl } from 'maplibre-gl';
     },
     center: [5.12, 52.37], // Netherlands center in WGS84
     zoom: 8,
-    attributionControl: true,
+    attributionControl: false, // Disable default attribution control
     locale: {
       "AttributionControl.ToggleAttribution": "Bronvermelding",
 
@@ -871,6 +870,12 @@ import { Map, Popup, NavigationControl } from 'maplibre-gl';
     showCompass: false,
     showZoom: true
   }), 'top-left');
+
+  // Add custom attribution control without MapLibre prefix (collapsible)
+  map.addControl(new AttributionControl({
+    customAttribution: '<a href="https://www.openstreetmap.org/copyright">&copy; OpenStreetMap contributors</a>',
+    compact: true
+  }), 'bottom-right');
 
   // Load initial data for visible layers
   map.on('load', async () => {

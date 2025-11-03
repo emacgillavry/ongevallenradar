@@ -488,3 +488,20 @@ button.maplibregl-popup-close-button:hover {
   color: #23527c !important;
   background-color: #f7f7f7 !important;
 }
+
+/* MapLibre Attribution Control Styling */
+
+.maplibregl-ctrl-attrib a {
+  font-family: Verdana, Arial, "Trebuchet MS", Helvetica, sans-serif !important;
+  font-size: 14px !important;
+  color: #077395 !important;
+  cursor: pointer !important;
+  font-weight: 700 !important;
+}
+
+.maplibregl-ctrl-attrib a:hover,
+.maplibregl-ctrl-attrib a:active,
+.maplibregl-ctrl-attrib a:visited {
+    color: #077395 !important;
+    text-decoration: none !important;
+}
