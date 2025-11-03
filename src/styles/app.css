@@ -43,6 +43,11 @@ h2 {
 .choices {
   font-size: 14px !important;
 }
+
+/* Ensure Choices.js dropdown appears above other elements */
+.choices__list.choices__list--dropdown {
+  z-index: 10000 !important;
+}
 label {
   display: inline-block;
   margin-bottom: 5px;
@@ -296,7 +301,7 @@ button {
 .pretty > input[type='checkbox'],
 .pretty > input[type='radio'] {
   position: absolute;
-  z-index: 99999999;
+  z-index: 1;
   top: 0;
   left: 0;
   display: block;
