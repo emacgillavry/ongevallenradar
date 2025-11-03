@@ -629,6 +629,7 @@ import { Map, Popup, LngLat } from 'maplibre-gl';
     itemSelectText: '',
     noResultsText: 'Geen resultaten gevonden',
     noChoicesText: 'Geen keuzes beschikbaar',
+    placeholderValue: 'Selecteer rayons...',
     choices: rayons.map(function(rayon) {
       return {
         value: rayon,
@@ -637,6 +638,33 @@ import { Map, Popup, LngLat } from 'maplibre-gl';
       };
     })
   });
+
+  // Function to update placeholder visibility based on selected items
+  const updateRayonPlaceholder = () => {
+    const hasSelectedItems = rayonChoices.getValue().length > 0;
+    const inputElement = selectElement.parentNode.querySelector('.choices__input--cloned');
+    
+    if (inputElement) {
+      if (hasSelectedItems) {
+        inputElement.placeholder = '';
+        inputElement.setAttribute('aria-label', '');
+        // Maintain a reasonable minimum width when items are selected
+        inputElement.style.minWidth = '8ch';
+        inputElement.style.width = '8ch';
+      } else {
+        inputElement.placeholder = 'Selecteer rayons...';
+        inputElement.setAttribute('aria-label', 'Selecteer rayons...');
+        // Let Choices.js calculate width based on placeholder
+        inputElement.style.minWidth = '';
+        inputElement.style.width = '';
+      }
+    }
+  };
+
+  // Set initial placeholder state based on pre-selected items
+  setTimeout(() => {
+    updateRayonPlaceholder();
+  }, 100);
 
   const hasRayon = () => Object.values(selectedRayons).some(selected => selected === true);
 
@@ -714,6 +742,12 @@ import { Map, Popup, LngLat } from 'maplibre-gl';
     selectedRayons[event.detail.value] = true;
     filterRayon = true;
     
+    // Update placeholder visibility
+    updateRayonPlaceholder();
+    
+    // Save to cookie automatically
+    saveToCookie();
+    
     // Apply filters to cached data instead of refetching
     Object.keys(layerConfig).forEach(layerKey => {
       if (layerConfig[layerKey].type === 'vector') {
@@ -728,6 +762,12 @@ import { Map, Popup, LngLat } from 'maplibre-gl';
       document.getElementById('filter-button-img').src = 'assets/images/toggle_aan.svg';
       filterRayon = false;
     }
+    
+    // Update placeholder visibility
+    updateRayonPlaceholder();
+    
+    // Save to cookie automatically
+    saveToCookie();
     
     // Apply filters to cached data instead of refetching
     Object.keys(layerConfig).forEach(layerKey => {
