@@ -5,7 +5,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 // Import dependencies
 import Cookies from 'js-cookie';
 import Choices from 'choices.js';
-import { Map, Popup, LngLat } from 'maplibre-gl';
+import { Map, Popup, NavigationControl } from 'maplibre-gl';
 // Sprite uses absolute URL (MapLibre requirement) - loads /sprite.png and /sprite.json automatically
 
 // Start the main application code
@@ -854,11 +854,23 @@ import { Map, Popup, LngLat } from 'maplibre-gl';
     center: [5.12, 52.37], // Netherlands center in WGS84
     zoom: 8,
     attributionControl: true,
+    locale: {
+      "AttributionControl.ToggleAttribution": "Bronvermelding",
+
+      "NavigationControl.ZoomIn": "Zoom in",
+      "NavigationControl.ZoomOut": "Zoom uit",
+    },
     dragRotate: false,      // Disable map rotation with right-click + drag
     touchZoomRotate: false, // Disable rotation on touch devices
     pitchWithRotate: false, // Disable pitch when rotating
     touchPitch: false       // Disable pitch on touch devices
   });
+
+  // Add zoom control to the map (zoom buttons only, no compass)
+  map.addControl(new NavigationControl({
+    showCompass: false,
+    showZoom: true
+  }), 'top-left');
 
   // Load initial data for visible layers
   map.on('load', async () => {
