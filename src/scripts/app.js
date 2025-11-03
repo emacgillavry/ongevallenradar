@@ -1,11 +1,12 @@
-// Import CSS dependencies first (OpenLayers CSS loaded via HTML)
+// Import CSS dependencies
 import 'choices.js/public/assets/styles/choices.min.css';
+import 'maplibre-gl/dist/maplibre-gl.css';
 
 // Import dependencies
 import Cookies from 'js-cookie';
 import Choices from 'choices.js';
-
-// OpenLayers is loaded via HTML script tag, so it's available as global 'ol'
+import { Map, Popup, LngLat } from 'maplibre-gl';
+// Sprite uses absolute URL (MapLibre requirement) - loads /sprite.png and /sprite.json automatically
 
 // Start the main application code
 (function() {
@@ -61,10 +62,69 @@ import Choices from 'choices.js';
   }
   loadRayonInfoFromCookie();
 
-  const defaultLayerInfo = {
-    uur: true,
-    actueel: true
+  // GeoServer configuration (must be defined before layerConfig)
+  const geoserverHost = import.meta.env.VITE_WFS_HOST || 'https://geoserver.stichtingimn.nl';
+  const geoserverPath = import.meta.env.VITE_WFS_PATH || '/geoserver/ows';
+  const geoserverUrl = `${geoserverHost}${geoserverPath}?`;
+
+  // Unified layer configuration with metadata and default visibility
+  const layerConfig = {
+    actueel: { 
+      title: 'Actuele meldingen', 
+      type: 'vector', 
+      defaultVisible: true,
+      order: 1,        // UI checkbox order
+      zIndex: 50,      // Map drawing order (highest - on top)
+      sourceUrl: `${geoserverUrl}service=WFS&request=GetFeature&typename=meldingen:actueel&version=1.1.0&srsname=EPSG:4326&outputFormat=application/json`
+    },
+    uur: { 
+      title: 'Meldingen laatste zestig minuten', 
+      type: 'vector', 
+      defaultVisible: true,
+      order: 2,        // UI checkbox order
+      zIndex: 40,      // Map drawing order (below actueel)
+      sourceUrl: `${geoserverUrl}service=WFS&request=GetFeature&typename=meldingen:uur&version=1.1.0&srsname=EPSG:4326&outputFormat=application/json`
+    },
+    vandaag: { 
+      title: 'Meldingen vandaag', 
+      type: 'vector', 
+      defaultVisible: false,
+      order: 3,        // UI checkbox order
+      zIndex: 30,      // Map drawing order (below uur)
+      sourceUrl: `${geoserverUrl}service=WFS&request=GetFeature&typename=meldingen:vandaag&version=1.1.0&srsname=EPSG:4326&outputFormat=application/json`
+    },
+    imwegen: { 
+      title: 'IM-wegen', 
+      type: 'raster', 
+      defaultVisible: false,
+      order: 4,        // UI checkbox order
+      zIndex: 10,      // Map drawing order (overlay layer)
+      sourceUrl: `${geoserverUrl}service=WMS&request=GetMap&layers=im_wegen:imwegen&styles=&format=image%2Fpng&transparent=true&version=1.1.1&width=256&height=256&srs=EPSG%3A3857&bbox={bbox-epsg-3857}`
+    },
+    bps: { 
+      title: 'Hectometerpalen', 
+      type: 'raster', 
+      defaultVisible: false,
+      order: 5,        // UI checkbox order
+      zIndex: 20,      // Map drawing order (overlay layer)
+      sourceUrl: `${geoserverUrl}service=WMS&request=GetMap&layers=bps:bps_palen&styles=&format=image%2Fpng&transparent=true&version=1.1.1&width=256&height=256&srs=EPSG%3A3857&bbox={bbox-epsg-3857}`
+    },
+    rayons: { 
+      title: 'Rayons', 
+      type: 'raster', 
+      defaultVisible: false,
+      order: 6,        // UI checkbox order
+      zIndex: 15,      // Map drawing order (base overlay layer)
+      sourceUrl: `${geoserverUrl}service=WMS&request=GetMap&layers=rayons:rayons&styles=&format=image%2Fpng&transparent=true&version=1.1.1&width=256&height=256&srs=EPSG%3A3857&bbox={bbox-epsg-3857}`
+    }
   };
+
+  // Extract default visibility settings from layerConfig
+  const defaultLayerInfo = Object.keys(layerConfig).reduce((acc, key) => {
+    acc[key] = layerConfig[key].defaultVisible;
+    return acc;
+  }, {});
+
   let layerInfo;
   const loadLayerInfoFromCookie = function() {
     layerInfo = cookieInfo ? cookieInfo.layers : defaultLayerInfo;
@@ -78,10 +138,6 @@ import Choices from 'choices.js';
     document.getElementById('cirkel').checked = cirkel;
   }
   loadCirkelFromCookie();
-
-  const geoserverHost = import.meta.env.VITE_WFS_HOST || 'https://geoserver.stichtingimn.nl';
-  const geoserverPath = import.meta.env.VITE_WFS_PATH || '/geoserver/ows';
-  const geoserverUrl = `${geoserverHost}${geoserverPath}?`;
 
   const rayons = [
     'D50',
@@ -310,6 +366,9 @@ import Choices from 'choices.js';
     'ZH163a'
   ];
 
+  // TODO: Convert OpenLayers styles to MapLibre GL JS style specifications
+  // Temporarily commented out to prevent ol.style errors during migration
+  /*
   const imageStyles = {
     actueel: {
       een: {
@@ -398,52 +457,132 @@ import Choices from 'choices.js';
       })
     }
   };
+  */
 
-  const fetchGeoJSON = async function(url, scope) {
+  // Placeholder for MapLibre GL JS styles (to be implemented)
+  const imageStyles = {};
+
+  // Track existing features for beeping functionality
+  const existingFeatures = {
+    actueel: new Set(),
+    uur: new Set(),
+    vandaag: new Set()
+  };
+
+  // Unified GeoJSON loading function for MapLibre
+  const loadGeoJSON = async (layerKey) => {
     try {
-      const response = await fetch(url.replace('%output%', 'application/json'));
-      if (!response.ok) {
-        throw new Error(`Network response was not ok: ${response.status}`);
+      const layerDef = layerConfig[layerKey];
+      if (!layerDef || layerDef.type !== 'vector') {
+        throw new Error(`Invalid layer key or not a vector layer: ${layerKey}`);
       }
-      const jsonData = await response.json();
-      return { success: true, data: jsonData, scope: scope };
+      const url = layerDef.sourceUrl;
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const geojsonData = await response.json();
+      
+      // Check for new features and handle beeping (only for actueel layer)
+      if (layerKey === 'actueel' && allowBeep && geojsonData.features) {
+        let shouldBeep = false;
+        
+        // Check each feature to see if it's new
+        for (const feature of geojsonData.features) {
+          const meldnr = feature.properties?.meldnr;
+          if (meldnr && !existingFeatures[layerKey].has(meldnr)) {
+            // This is a new feature - check if it passes filters
+            const mockFeature = {
+              get: (prop) => feature.properties?.[prop]
+            };
+            
+            if (filterFunction(mockFeature)) {
+              shouldBeep = true;
+            }
+          }
+        }
+        
+        // Update the tracking set with current feature IDs
+        existingFeatures[layerKey].clear();
+        geojsonData.features.forEach(feature => {
+          const meldnr = feature.properties?.meldnr;
+          if (meldnr) {
+            existingFeatures[layerKey].add(meldnr);
+          }
+        });
+        
+        // Beep if we found new features that pass filters
+        if (shouldBeep) {
+          beep();
+        }
+      } else if (geojsonData.features) {
+        // For non-actueel layers, just update the tracking set without beeping
+        existingFeatures[layerKey].clear();
+        geojsonData.features.forEach(feature => {
+          const meldnr = feature.properties?.meldnr;
+          if (meldnr) {
+            existingFeatures[layerKey].add(meldnr);
+          }
+        });
+      }
+      
+      // Cache the raw data for filtering without refetching
+      rawDataCache[layerKey] = geojsonData;
+      
+      // Apply filtering to the data before updating the map
+      const filteredData = filterGeoJSON(geojsonData);
+      
+      // Update the map source with filtered data
+      map.getSource(layerKey).setData(filteredData);
+      
+      return { success: true, data: filteredData, layerKey: layerKey };
     } catch (error) {
-      console.error('Fetch error:', error);
-      return { success: false, error: error, scope: scope };
+      console.error(`Error loading ${layerKey} data:`, error);
+      return { success: false, error: error, layerKey: layerKey };
     }
   };
 
-  let styleCache = {};
-  let styleCacheUur = {};
-  let styleCacheVandaag = {};
+  // Placeholder for compatibility
+  const sources = {};
 
-  const geojsonFormat = new ol.format.GeoJSON();
-
-  const sourceUrls = {
-    actueel: `${geoserverUrl}service=WFS&request=GetFeature&typename=meldingen:actueel&version=1.1.0&srsname=EPSG:3857&outputFormat=%output%`,
-    uur: `${geoserverUrl}service=WFS&request=GetFeature&typename=meldingen:uur&version=1.1.0&srsname=EPSG:3857&outputFormat=%output%`,
-    vandaag: `${geoserverUrl}service=WFS&request=GetFeature&typename=meldingen:vandaag&version=1.1.0&srsname=EPSG:3857&outputFormat=%output%`
+  // Cache for raw (unfiltered) GeoJSON data
+  const rawDataCache = {
+    actueel: null,
+    uur: null,
+    vandaag: null
   };
 
-  const sources = {
-    actueel: new ol.source.Vector({
-      useSpatialIndex: false,
-      strategy: ol.loadingstrategy.all,
-      url: sourceUrls.actueel.replace('%output%', 'application/json'),
-      format: geojsonFormat
-    }),
-    uur: new ol.source.Vector({
-      useSpatialIndex: false,
-      strategy: ol.loadingstrategy.all,
-      url: sourceUrls.uur.replace('%output%', 'application/json'),
-      format: geojsonFormat
-    }),
-    vandaag: new ol.source.Vector({
-      useSpatialIndex: false,
-      strategy: ol.loadingstrategy.all,
-      url: sourceUrls.vandaag.replace('%output%', 'application/json'),
-      format: geojsonFormat
-    })
+  // Apply current filters to already loaded data without refetching
+  const applyFiltersToLayer = (layerKey) => {
+    const rawData = rawDataCache[layerKey];
+    if (!rawData) {
+      console.log(`No cached data for ${layerKey}, skipping filter application`);
+      return;
+    }
+    
+    const filteredData = filterGeoJSON(rawData);
+    map.getSource(layerKey).setData(filteredData);
+    console.log(`Applied filters to ${layerKey}: ${filteredData.features.length}/${rawData.features.length} features shown`);
+  };
+
+  // Filter GeoJSON data based on current filter settings
+  const filterGeoJSON = (geojsonData) => {
+    if (!geojsonData || !geojsonData.features) {
+      return geojsonData;
+    }
+
+    const filteredFeatures = geojsonData.features.filter(feature => {
+      // Create mock feature object for compatibility with existing filterFunction
+      const mockFeature = {
+        get: (prop) => feature.properties?.[prop]
+      };
+      return filterFunction(mockFeature);
+    });
+
+    return {
+      ...geojsonData,
+      features: filteredFeatures
+    };
   };
 
   const filterFunction = (feature) => {
@@ -479,111 +618,8 @@ import Choices from 'choices.js';
     return true;
   };
 
-  const layers = {
-    uur: new ol.layer.Vector({
-      zIndex: 4,
-      visible: !!layerInfo.uur,
-      id: 'uur',
-      title: 'Meldingen laatste zestig minuten',
-      style: function(feature, resolution) {
-        const showLabel = resolution <= 78;
-        if (filterFunction(feature) === false) {
-          return null;
-        }
-        const text = feature.get('bps') + '\n' + feature.get('tijdstip') + '\n' + feature.get('incident_type');
-        if (!styleCacheUur[showLabel + '|' + text]) {
-          styleCacheUur[showLabel + '|' + text]= new ol.style.Style({
-            text: showLabel ? new ol.style.Text({
-              fill: new ol.style.Fill({color: '#000000'}),
-              stroke: new ol.style.Stroke({color: '#FFFFFF', width: 1.5}),
-              font: 'bold 11px Arial',
-              offsetY: -35,
-              text: text
-            }) : undefined,
-            image: imageStyles.uur[(cirkel && feature.get('incident_type') !== 'Ongeval') ? 'circle' : 'normal']
-          });
-        }
-        return styleCacheUur[showLabel + '|' + text];
-      },
-      source: sources.uur
-    }),
-    vandaag: new ol.layer.Vector({
-      zIndex: 4,
-      visible: !!layerInfo.vandaag,
-      id: 'vandaag',
-      title: 'Meldingen vandaag',
-      style: function(feature, resolution) {
-        const showLabel = resolution <= 78;
-        if (filterFunction(feature) === false) {
-          return null;
-        }
-        const text = feature.get('bps') + '\n' + feature.get('tijdstip') + '\n' + feature.get('incident_type');
-        if (!styleCacheVandaag[showLabel + '|' + text]) {
-          styleCacheVandaag[showLabel + '|' + text]= new ol.style.Style({
-            text: showLabel ? new ol.style.Text({
-              fill: new ol.style.Fill({color: '#000000'}),
-              stroke: new ol.style.Stroke({color: '#FFFFFF', width: 1.5}),
-              font: 'bold 11px Arial',
-              offsetY: -35,
-              text: text
-            }) : undefined,
-            image: imageStyles.uur[(cirkel && feature.get('incident_type') !== 'Ongeval') ? 'circle' : 'normal']
-          });
-        }
-        return styleCacheVandaag[showLabel + '|' + text];
-      },
-      source: sources.vandaag
-    }),
-    actueel: new ol.layer.Vector({
-      visible: !!layerInfo.actueel,
-      zIndex: 5,
-      id: 'actueel',
-      title: 'Actuele meldingen',
-      style: function(feature, resolution) {
-        const nummer = feature.get('nummer');
-        if (filterFunction(feature) === false) {
-          return null;
-        }
-        const text = feature.get('bps') + '\n' + feature.get('tijdstip') + '\n' + feature.get('incident_type');
-        if (!styleCache[nummer + '|' + text]) {
-          styleCache[nummer + '|' + text] = new ol.style.Style({
-            text: new ol.style.Text({
-              fill: new ol.style.Fill({color: '#00007a'}),
-              stroke: new ol.style.Stroke({color: '#FFFFFF', width: 1.5}),
-              font: 'bold 11px Arial',
-              offsetY: -35,
-              text: text
-            }),
-            image: imageStyles.actueel[nummer][(cirkel && feature.get('incident_type') !== 'Ongeval') ? 'circle' : 'normal']
-          });
-        }
-        return styleCache[nummer + '|' + text];
-      },
-      source: sources.actueel
-    })
-  };
-
-  // initial load of features
-  const loadLayerData = async (key, source) => {
-    const result = await fetchGeoJSON(sourceUrls[key], {source: source, key: key});
-    if (result.success) {
-      const features = result.scope.source.getFormat().readFeatures(result.data);
-      result.scope.source.addFeatures(features);
-    }
-  };
-
-  for (const key in layers) {
-    const source = sources[key];
-    if (layers[key].getVisible()) {
-      loadLayerData(key, source);
-    } else {
-      layers[key].once('change:visible', (evt) => {
-        if (evt.target.getVisible()) {
-          loadLayerData(key, source);
-        }
-      });
-    }
-  }
+  // Placeholder for MapLibre layers
+  const layers = {};
 
   // Initialize Choices.js with rayons as choices
   const selectElement = document.getElementById('sel-rayon');
@@ -604,14 +640,10 @@ import Choices from 'choices.js';
 
   const hasRayon = () => Object.values(selectedRayons).some(selected => selected === true);
 
-  document.getElementById('save').addEventListener('click', function(evt) {
+  // Function to save current settings to cookies
+  const saveToCookie = function() {
     const json = {};
-    json.layers = {};
-    const inputs = document.querySelectorAll("#layer-body input");
-    for (let i = 0; i < inputs.length; i++) {
-      const input = inputs[i];
-      json.layers[input.id.replace('vis_', '')] = input.checked;
-    }
+    json.layers = layerInfo; // Use current layerInfo object directly
     json.filterRayon = filterRayon;
     json.selectedRayons = selectedRayons;
     json.filterMelder = filterMelder;
@@ -621,6 +653,10 @@ import Choices from 'choices.js';
     json.filterType = filterType;
     json.selectedTypes = selectedTypes;
     Cookies.set(cookieName, JSON.stringify(json));
+  };
+
+  document.getElementById('save').addEventListener('click', function(evt) {
+    saveToCookie();
   });
 
   document.getElementById('clear').addEventListener('click', function(evt) {
@@ -665,14 +701,25 @@ import Choices from 'choices.js';
     }
     filterRayon = !filterRayon;
     setToggleImg();
-    for (const key in sources) {
-      const source = sources[key];
-      source.changed();
-    }
+    
+    // Apply filters to cached data instead of refetching
+    Object.keys(layerConfig).forEach(layerKey => {
+      if (layerConfig[layerKey].type === 'vector') {
+        applyFiltersToLayer(layerKey);
+      }
+    });
   });
   // Add Choices.js event listeners
   selectElement.addEventListener('addItem', function(event) {
     selectedRayons[event.detail.value] = true;
+    filterRayon = true;
+    
+    // Apply filters to cached data instead of refetching
+    Object.keys(layerConfig).forEach(layerKey => {
+      if (layerConfig[layerKey].type === 'vector') {
+        applyFiltersToLayer(layerKey);
+      }
+    });
   });
   
   selectElement.addEventListener('removeItem', function(event) {
@@ -680,99 +727,328 @@ import Choices from 'choices.js';
     if (!hasRayon()) {
       document.getElementById('filter-button-img').src = 'assets/images/toggle_aan.svg';
       filterRayon = false;
-      for (const key in sources) {
-        const source = sources[key];
-        source.changed();
-      }
     }
-  });
-
-  const map = new ol.Map({
-    controls: ol.control.defaults({attribution: false}),
-    layers: [
-      new ol.layer.Tile({
-        extent: [313086.06785608083, 6418264.391049679, 939258.2035682462, 7200979.560689885],
-        source: new ol.source.OSM({
-          url: import.meta.env.VITE_TILE_SERVER_URL_TEMPLATE || 'https://kaartserver.incidentcentrale.nl/{z}/{x}/{y}.png'
-        })
-      }),
-      new ol.layer.Tile({
-        visible: !!layerInfo.rayons,
-        zIndex: 3,
-        id: 'rayons',
-        title: 'Rayons',
-        source: new ol.source.TileWMS({
-          url: geoserverUrl,
-          params: {'LAYERS': 'rayons:rayons', 'TILED': true, 'VERSION': '1.1.1'}
-        })
-      }),
-      new ol.layer.Tile({
-        visible: !!layerInfo.bps,
-        zIndex: 3,
-        id: 'bps',
-        title: 'Hectometerpalen',
-        source: new ol.source.TileWMS({
-          url: geoserverUrl,
-          params: {'LAYERS': 'bps:bps_palen', 'TILED': true, 'VERSION': '1.1.1'}
-        })
-      }),
-      new ol.layer.Tile({
-        visible: !!layerInfo.imwegen,
-        zIndex: 3,
-        id: 'imwegen',
-        title: 'IM-wegen',
-        source: new ol.source.TileWMS({
-          url: geoserverUrl,
-          params: {'LAYERS': 'im_wegen:imwegen', 'TILED': true, 'VERSION': '1.1.1'}
-        })
-      }),
-      layers.vandaag,
-      layers.uur,
-      layers.actueel
-    ],
-    target: 'map',
-    view: new ol.View({ minResolution: 0.5971642834779395, maxResolution: 611.49622628141, center: [570000, 6817000], zoom: 1})
-  });
-
-  const container = document.getElementById('popup');
-  const content = document.getElementById('popup-content');
-  const closer = document.getElementById('popup-closer');
-
-  closer.onclick = function() {
-    overlay.setPosition(undefined);
-    closer.blur();
-    return false;
-  };
-
-  const overlay = new ol.Overlay({
-    element: container,
-    autoPan: true,
-    autoPanAnimation: {
-      duration: 250
-    }
-  });
-
-  map.addOverlay(overlay);
-
-  map.on('click', function(evt) {
-    const pixel = map.getEventPixel(evt.originalEvent);
-    overlay.setPosition(undefined);
-    map.forEachFeatureAtPixel(pixel, function(feature, layer) {
-      if (feature && layer !== null) {
-        const coordinate = evt.coordinate;
-        let html = '<table class="table"><tbody>';
-        html += '<tr><td>IM nummer</td><td>' + feature.get('meldnr') + '</td></tr>';
-        html += '<tr><td>Locatie</td><td>' + feature.get('bps') + '</td></tr>';
-        html += '<tr><td>Tijdstip</td><td>' + feature.get('tijdstip') + '</td></tr>';
-        html += '<tr><td>Type</td><td>' + feature.get('incident_type').replace('Pech', 'Pechverplaatsing').replace('Onbeheerd', 'Onbeheerd voertuig') + '</td></tr>';
-        html += '<tr><td>Berger</td><td>' + feature.get('berger') + '</td></tr>';
-        html += '<tr><td>Melder</td><td>' + feature.get('melder') + '</td></tr>';
-        html += '<tr><td>ETA</td><td>' + feature.get('aankomst') + '</td></tr>';
-        html += '</tbody></table>';
-        content.innerHTML = html;
-        overlay.setPosition(feature.getGeometry().getCoordinates());
+    
+    // Apply filters to cached data instead of refetching
+    Object.keys(layerConfig).forEach(layerKey => {
+      if (layerConfig[layerKey].type === 'vector') {
+        applyFiltersToLayer(layerKey);
       }
     });
+  });
+
+  // Helper function to generate sources from layerConfig
+  const generateSources = () => {
+    const sources = {
+      'osm': {
+        type: 'raster',
+        tiles: [import.meta.env.VITE_TILE_SERVER_URL_TEMPLATE || 'https://kaartserver.incidentcentrale.nl/{z}/{x}/{y}.png'],
+        tileSize: 256,
+        attribution: '© OpenStreetMap contributors'
+      }
+    };
+
+    // Add sources from layerConfig
+    Object.keys(layerConfig).forEach(layerId => {
+      const layerDef = layerConfig[layerId];
+      
+      if (layerDef.type === 'vector') {
+        // Vector sources start with empty data, loaded dynamically
+        sources[layerId] = {
+          type: 'geojson',
+          data: {
+            type: 'FeatureCollection',
+            features: []
+          }
+        };
+      } else if (layerDef.type === 'raster') {
+        // Raster sources use WMS tiles
+        sources[layerId + '-wms'] = {
+          type: 'raster',
+          tiles: [layerDef.sourceUrl],
+          tileSize: 256
+        };
+      }
+    });
+
+    return sources;
+  };
+
+  // Convert EPSG:3857 coordinates [570000, 6817000] to WGS84 [lng, lat]
+  // This is approximately [5.12, 52.37] (Netherlands center)
+  const map = new Map({
+    container: 'map',
+    style: {
+      version: 8,
+      sprite: `${window.location.origin}/sprite`, // Absolute URL required by MapLibre
+      glyphs: `${window.location.origin}/fonts/{fontstack}/{range}.pbf`, // Local font glyphs for text rendering
+      sources: generateSources(),
+      layers: [
+        {
+          id: 'osm',
+          type: 'raster',
+          source: 'osm',
+          minzoom: 0,
+          maxzoom: 22
+        },
+        // Generate only raster layers from layerConfig
+        // Vector layers will be added properly after sprite loading
+        // Sort by zIndex for proper map drawing order (lower zIndex = drawn first/behind)
+        ...Object.keys(layerConfig)
+          .filter(layerId => layerConfig[layerId].type === 'raster')
+          .sort((a, b) => layerConfig[a].zIndex - layerConfig[b].zIndex)
+          .map(layerId => {
+            const layerDef = layerConfig[layerId];
+            
+            return {
+              id: layerId,
+              type: 'raster',
+              source: layerId + '-wms',
+              layout: {
+                visibility: layerInfo[layerId] ? 'visible' : 'none'
+              }
+            };
+          })
+      ]
+    },
+    center: [5.12, 52.37], // Netherlands center in WGS84
+    zoom: 8,
+    attributionControl: true,
+    dragRotate: false,      // Disable map rotation with right-click + drag
+    touchZoomRotate: false, // Disable rotation on touch devices
+    pitchWithRotate: false, // Disable pitch when rotating
+    touchPitch: false       // Disable pitch on touch devices
+  });
+
+  // Load initial data for visible layers
+  map.on('load', async () => {
+    try {
+      // Sprite is automatically loaded from /sprite.png and /sprite.json by MapLibre
+      console.log('Map loaded with sprite support');
+      
+      // Create all vector layers with proper sprite-based styling
+      // These layers were not created in the initial style - we add them here once sprites are loaded
+      
+      // Define the dynamic icon expression for actueel layer (priority-based colors)
+      const actueleIconExpression = [
+        'case',
+        // If cirkel is enabled AND incident_type is not 'Ongeval', use circles
+        ['all', 
+          ['literal', cirkel], 
+          ['!=', ['get', 'incident_type'], 'Ongeval']
+        ],
+        [
+          'case',
+          ['==', ['get', 'nummer'], 'een'], 'circle-red',
+          ['==', ['get', 'nummer'], 'twee'], 'circle-orange', 
+          ['in', ['get', 'nummer'], ['literal', ['drie', 'vier', 'vijf']]], 'circle-yellow',
+          'circle-gray' // default circle
+        ],
+        // Otherwise use triangles
+        [
+          'case',
+          ['==', ['get', 'nummer'], 'een'], 'triangle-red',
+          ['==', ['get', 'nummer'], 'twee'], 'triangle-orange',
+          ['in', ['get', 'nummer'], ['literal', ['drie', 'vier', 'vijf']]], 'triangle-yellow',
+          'triangle-gray' // default triangle
+        ]
+      ];
+      
+      // Define the icon expression for uur and vandaag layers (light gray only)
+      const uureVandaagIconExpression = [
+        'case',
+        // If cirkel is enabled AND incident_type is not 'Ongeval', use circles
+        ['all', 
+          ['literal', cirkel], 
+          ['!=', ['get', 'incident_type'], 'Ongeval']
+        ],
+        'circle-lightgray', // Light gray circle
+        'triangle-lightgray' // Light gray triangle
+      ];
+      
+      // Helper function to get insertion point for proper layer ordering by zIndex
+      const getLayerInsertionPoint = (targetZIndex) => {
+        const layers = map.getStyle().layers;
+        for (let i = layers.length - 1; i >= 0; i--) {
+          const layer = layers[i];
+          // Find corresponding layer configuration
+          const layerConfigEntry = Object.entries(layerConfig).find(([key, config]) => 
+            config.type === 'raster' && layer.id === key
+          );
+          if (layerConfigEntry && layerConfigEntry[1].zIndex < targetZIndex) {
+            return layer.id;
+          }
+        }
+        return undefined; // Insert at the bottom
+      };
+      
+      // Add vector layers in zIndex order to ensure proper layering
+      const vectorLayers = [
+        { id: 'vandaag', zIndex: layerConfig.vandaag.zIndex, expression: uureVandaagIconExpression, size: 1.0 },
+        { id: 'uur', zIndex: layerConfig.uur.zIndex, expression: uureVandaagIconExpression, size: 1.0 },
+        { id: 'actueel', zIndex: layerConfig.actueel.zIndex, expression: actueleIconExpression, size: 1.0 }
+      ];
+      
+      // Sort by zIndex to add in correct order
+      vectorLayers.sort((a, b) => a.zIndex - b.zIndex);
+      
+      vectorLayers.forEach(({ id, expression, size }) => {
+        const layerName = id + '-layer';
+        const beforeLayerId = getLayerInsertionPoint(layerConfig[id].zIndex);
+        
+        // Add symbol layer for icons
+        map.addLayer({
+          id: layerName,
+          type: 'symbol',
+          source: id,
+          layout: {
+            visibility: layerInfo[id] ? 'visible' : 'none',
+            'icon-image': expression,
+            'icon-size': size,
+            'icon-allow-overlap': true,
+            'icon-ignore-placement': true
+          }
+        }, beforeLayerId);
+        
+        // Add text layer for labels
+        const textLayerName = id + '-labels';
+        const textExpression = [
+          'concat',
+          ['get', 'bps'],
+          '\n',
+          ['get', 'tijdstip'], 
+          '\n',
+          ['get', 'incident_type']
+        ];
+        
+        // Configure text layer based on layer type
+        const textLayerConfig = {
+          id: textLayerName,
+          type: 'symbol',
+          source: id,
+          layout: {
+            visibility: layerInfo[id] ? 'visible' : 'none',
+            'text-field': textExpression,
+            'text-font': ['Open Sans Bold'],
+            'text-size': 11,
+            'text-offset': [0, -3],
+            'text-anchor': 'center',
+            'text-allow-overlap': true,
+            'text-ignore-placement': false
+          },
+          paint: {
+            'text-color': id === 'actueel' ? '#00007a' : '#000000',
+            'text-halo-color': '#FFFFFF',
+            'text-halo-width': 1.5
+          }
+        };
+        
+        // For uur and vandaag layers, only show labels at high zoom levels (equivalent to resolution <= 78)
+        // OpenLayers resolution ~78 corresponds to zoom level ~10-11 in MapLibre
+        if (id === 'uur' || id === 'vandaag') {
+          textLayerConfig.layout['text-size'] = [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            9, 0,    // Hide text below zoom 10
+            10, 11    // Show text at full size from zoom 11+
+          ];
+        }
+        
+        map.addLayer(textLayerConfig, beforeLayerId);
+      });
+      
+      console.log('Converted all vector layers to dynamic symbol layers');
+    } catch (error) {
+      console.error('Failed to load triangle images:', error);
+    }
+
+    // Apply layer visibility settings from `layerInfo` to MapLibre layers/UI
+    applyLayerVisbility();
+    // Load data for visible layers
+    if (layerInfo.actueel) {
+      loadGeoJSON('actueel');
+    }
+    if (layerInfo.uur) {
+      loadGeoJSON('uur');
+    }
+    if (layerInfo.vandaag) {
+      loadGeoJSON('vandaag');
+    }
+  });
+
+  // MapLibre popup implementation
+  let currentPopup = null;
+
+  // Helper function to generate popup HTML content from feature properties
+  const generatePopupContent = (properties) => {
+    let html = '<h3 class="popover-title">Info</h3><div id="popup-content" class="popover-content"><table class="table"><tbody>';
+    html += '<tr><td>IM nummer</td><td>' + (properties.meldnr || '') + '</td></tr>';
+    html += '<tr><td>Locatie</td><td>' + (properties.bps || '') + '</td></tr>';
+    html += '<tr><td>Tijdstip</td><td>' + (properties.tijdstip || '') + '</td></tr>';
+    
+    // Handle type replacements like in original code
+    let incidentType = properties.incident_type || '';
+    incidentType = incidentType.replace('Pech', 'Pechverplaatsing').replace('Onbeheerd', 'Onbeheerd voertuig');
+    html += '<tr><td>Type</td><td>' + incidentType + '</td></tr>';
+    
+    html += '<tr><td>Berger</td><td>' + (properties.berger || '') + '</td></tr>';
+    html += '<tr><td>Melder</td><td>' + (properties.melder || '') + '</td></tr>';
+    html += '<tr><td>ETA</td><td>' + (properties.aankomst || '') + '</td></tr>';
+    html += '</tbody></table></div>';
+    return html;
+  };
+
+  // Add click event listener to map for popup functionality
+  map.on('click', (e) => {
+    // Close existing popup
+    if (currentPopup) {
+      currentPopup.remove();
+      currentPopup = null;
+    }
+
+    // Query rendered features at the click point
+    const features = map.queryRenderedFeatures(e.point, {
+      // Only query vector layers that contain incident data
+      layers: ['actueel-layer', 'uur-layer', 'vandaag-layer']
+    });
+
+    if (features.length > 0) {
+      // Use the first feature found
+      const feature = features[0];
+      const coordinates = feature.geometry.coordinates.slice();
+      const properties = feature.properties;
+
+      // Ensure popup appears over the feature, not offset
+      // Handle the case where multiple identical features might be at the same coordinate
+      while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+        coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+      }
+
+      // Generate popup content
+      const popupContent = generatePopupContent(properties);
+
+      // Create new MapLibre popup
+      currentPopup = new Popup({
+        closeButton: true,
+        closeOnClick: false,
+        maxWidth: '276px',
+        className: 'popover'
+      })
+        .setLngLat(coordinates)
+        .setHTML(popupContent)
+        .addTo(map);
+    }
+  });
+
+  // Change cursor to pointer when hovering over incident features
+  map.on('mouseenter', ['actueel-layer', 'uur-layer', 'vandaag-layer'], () => {
+    map.getCanvas().style.cursor = 'pointer';
+  });
+
+  // Change cursor back when leaving incident features
+  map.on('mouseleave', ['actueel-layer', 'uur-layer', 'vandaag-layer'], () => {
+    map.getCanvas().style.cursor = '';
   });
 
   const setBeepImg = () => {
@@ -801,61 +1077,6 @@ import Choices from 'choices.js';
     }
   };
 
-  const sourceHasFeature = function(source, feature) {
-    const sourceFeatures = source.getFeatures();
-    for (let i = 0, ii = sourceFeatures.length; i < ii; ++i) {
-      if (feature.get('meldnr') === sourceFeatures[i].get('meldnr')) {
-        return true;
-      }
-    }
-    return false;
-  };
-
-  const getRemove = function(source, features) {
-    const sourceFeatures = source.getFeatures();
-    const removeList = [];
-    for (let i = 0, ii = sourceFeatures.length; i < ii; ++i) {
-      const feature = sourceFeatures[i];
-      let remove = true;
-      for (let j = 0, jj = features.length; j < jj; ++j) {
-        if (feature.get('meldnr') === features[j].get('meldnr')) {
-          remove = false;
-        }
-      }
-      if (remove === true) {
-        removeList.push(feature);
-      }
-    }
-    return removeList;
-  };
-
-  const handleNewFeatures = function(config, features) {
-    let doBeep = false;
-    const key = config.key;
-    const source = config.source;
-    let i, ii;
-    for (i = 0, ii = features.length; i < ii; ++i) {
-      const feature = features[i];
-      if (!sourceHasFeature(source, feature)) {
-        // only beep for actueel
-        doBeep = (key === 'actueel');
-        // do not beep if we are filtered
-        if (filterFunction(feature) === false) {
-          doBeep = false;
-        }
-      }
-    }
-    if (allowBeep && doBeep) {
-      beep();
-    }
-    // clear the style caches
-    styleCache = {};
-    styleCacheUur = {};
-    styleCacheVandaag = {};
-    source.clear();
-    source.addFeatures(features);
-  };
-
   const formatDate = (date) => {
     return `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;
   };
@@ -878,22 +1099,18 @@ import Choices from 'choices.js';
     }
   };
 
+  // MapLibre feature reloading
   const reloadFeatures = async () => {
     setDateTime();
     
     const loadPromises = [];
-    for (const key in layers) {
-      if (layers[key].getVisible()) {
-        const source = sources[key];
-        loadPromises.push(
-          fetchGeoJSON(sourceUrls[key], {source: source, key: key})
-            .then(result => {
-              if (result.success) {
-                const features = result.scope.source.getFormat().readFeatures(result.data);
-                handleNewFeatures(result.scope, features);
-              }
-            })
-        );
+    const layerKeys = ['actueel', 'uur', 'vandaag'];
+    
+    for (const layerKey of layerKeys) {
+      // Check if layer is visible in MapLibre
+      const layer = map.getLayer(layerKey + '-layer');
+      if (layer && map.getLayoutProperty(layerKey + '-layer', 'visibility') === 'visible') {
+        loadPromises.push(loadGeoJSON(layerKey));
       }
     }
     
@@ -928,6 +1145,15 @@ import Choices from 'choices.js';
     title: 'Onbekend',
     items: ['Overig', 'Wegbeheerder']
   }];
+  
+  // Initialize selectedMelders based on selectedMeldersCat and melders configuration
+  for (let m = 0, mm = melders.length; m < mm; ++m) {
+    const isSelected = selectedMeldersCat[melders[m].id];
+    for (let itemI = 0, itemII = melders[m].items.length; itemI < itemII; ++itemI) {
+      selectedMelders[melders[m].items[itemI].toLowerCase()] = isSelected;
+    }
+  }
+  
   let m, mm;
   const handleMelderFilter = function(evt) {
     for (m = 0, mm = melders.length; m < mm; ++m) {
@@ -940,10 +1166,16 @@ import Choices from 'choices.js';
       }
     }
     filterMelder = true;
-    for (const key in sources) {
-      const source = sources[key];
-      source.changed();
-    }
+    
+    // Apply filters to cached data instead of refetching
+    Object.keys(layerConfig).forEach(layerKey => {
+      if (layerConfig[layerKey].type === 'vector') {
+        applyFiltersToLayer(layerKey);
+      }
+    });
+    
+    // Save filter state to cookie
+    saveToCookie();
   };
   for (m = 0, mm = melders.length; m < mm; ++m) {
     const checked = selectedMeldersCat[melders[m].id] ? ' checked' : '';
@@ -966,10 +1198,16 @@ import Choices from 'choices.js';
   const handleTypeFilter = function(evt) {
     selectedTypes[evt.target.value] = evt.target.checked;
     filterType = true;
-    for (const key in sources) {
-      const source = sources[key];
-      source.changed();
-    }
+    
+    // Apply filters to cached data instead of refetching
+    Object.keys(layerConfig).forEach(layerKey => {
+      if (layerConfig[layerKey].type === 'vector') {
+        applyFiltersToLayer(layerKey);
+      }
+    });
+    
+    // Save filter state to cookie
+    saveToCookie();
   }
 
   const typeContainer = document.getElementById('filter-type');
@@ -1001,6 +1239,8 @@ import Choices from 'choices.js';
   };
   setTypeFilter();
 
+  // TODO: Convert OpenLayers layer management to MapLibre style layer management
+  /*
   const findLayerById = function(id) {
     const layersArray = map.getLayers().getArray()
     for (let i = 0, ii = layersArray.length; i < ii; ++i) {
@@ -1009,43 +1249,160 @@ import Choices from 'choices.js';
       }
     }
   };
+  */
+
+  // Placeholder for MapLibre layer management
+  const findLayerById = function(id) {
+    // TODO: Implement with MapLibre getLayer() or style management
+    return null;
+  };
 
   const applyLayerVisbility = function() {
     const inputs = document.querySelectorAll("#layer-body input");
     for (let i = 0; i < inputs.length; i++) {
       const input = inputs[i];
       const id = input.id;
-      const visible = !!layerInfo[id.replace('vis_', '')];
+      const key = id.replace('vis_', '');
+      const visible = !!layerInfo[key];
       input.checked = visible;
-      const layer = findLayerById(id.replace('vis_', ''));
-      layer.setVisible(visible);
+
+      // Use layerConfig to determine MapLibre layer id mapping
+      if (layerConfig[key]) {
+        const layerDef = layerConfig[key];
+        const mapLayerId = layerDef.type === 'vector' ? key + '-layer' : key;
+        const textLayerId = layerDef.type === 'vector' ? key + '-labels' : null;
+
+        // If the map and layer exist, update MapLibre layer visibility
+        try {
+          if (map && typeof map.getLayer === 'function' && map.getLayer(mapLayerId)) {
+            map.setLayoutProperty(mapLayerId, 'visibility', visible ? 'visible' : 'none');
+            
+            // Also update text layer visibility for vector layers
+            if (textLayerId && map.getLayer(textLayerId)) {
+              map.setLayoutProperty(textLayerId, 'visibility', visible ? 'visible' : 'none');
+            }
+          }
+        } catch (e) {
+          // Ignore errors if layer isn't present yet
+        }
+      }
     }
   };
 
-  // layer list control
+  // MapLibre layer list control - create checkboxes for layer visibility
   const layerBody = document.getElementById('layer-body');
-  const layersArray = map.getLayers().getArray().reverse();
-  for (let l = 0, ll = layersArray.length; l < ll; ++l) {
-    const layer = layersArray[l];
-    if (layer.get('title')) {
-      const checked = layer.getVisible() ? ' checked' : '';
-      layerBody.insertAdjacentHTML('beforeend', '<div class="pretty"><input id="vis_' + layer.get('id') + '" type="checkbox" value=""' + checked + '/><label><i class="mi mi-check"></i>' + layer.get('title') + '</label></div><br/>');
-      (function(currentLayer) {
-        document.getElementById('vis_' + currentLayer.get('id')).addEventListener('change', function(evt) {
-          currentLayer.setVisible(evt.target.checked);
-        });
-      })(layer);
-    }
-  }
+
+  // Create checkboxes for each layer using the unified layerConfig
+  // Sort by order property to maintain consistent UI layout
+  const sortedLayerKeys = Object.keys(layerConfig).sort((a, b) => layerConfig[a].order - layerConfig[b].order);
+  
+  sortedLayerKeys.forEach(layerId => {
+    const layerDef = layerConfig[layerId];
+    const checked = layerInfo[layerId] ? ' checked' : '';
+    const checkboxHtml = `<div class="pretty"><input id="vis_${layerId}" type="checkbox" value=""${checked}/><label><i class="mi mi-check"></i>${layerDef.title}</label></div><br/>`;
+    layerBody.insertAdjacentHTML('beforeend', checkboxHtml);
+
+    // Add event listener for checkbox changes
+    document.getElementById('vis_' + layerId).addEventListener('change', function(evt) {
+      const visible = evt.target.checked;
+      
+      // Update layerInfo object
+      layerInfo[layerId] = visible;
+      
+      // Get MapLibre layer id (vector layers have '-layer' suffix)
+      const mapLayerId = layerDef.type === 'vector' ? layerId + '-layer' : layerId;
+      
+      // Update MapLibre layer visibility
+      if (map && map.getLayer(mapLayerId)) {
+        map.setLayoutProperty(mapLayerId, 'visibility', visible ? 'visible' : 'none');
+        
+        // Also update text layer visibility for vector layers
+        const textLayerId = layerDef.type === 'vector' ? layerId + '-labels' : null;
+        if (textLayerId && map.getLayer(textLayerId)) {
+          map.setLayoutProperty(textLayerId, 'visibility', visible ? 'visible' : 'none');
+        }
+        
+        // Load data for vector layers when made visible
+        if (layerDef.type === 'vector' && visible) {
+          loadGeoJSON(layerId);
+        }
+      }
+      
+      // Save layer visibility to cookies
+      saveToCookie();
+    });
+  });
 
   const onChangeCirkel = function(evt) {
     cirkel = evt.target.checked;
-    // clear the style caches
-    styleCache = {};
-    styleCacheUur = {};
-    styleCacheVandaag = {};
-    for (const key in sources) {
-      sources[key].changed();
+    
+    // Store preference in cookie using the existing function
+    saveToCookie();
+    
+    console.log('Circle preference changed to:', cirkel);
+    
+    // Update map layers with new styling
+    if (map) {
+      // Define the dynamic icon expression for actueel layer (priority-based colors)
+      const actueleIconExpression = [
+        'case',
+        // If cirkel is enabled AND incident_type is not 'Ongeval', use circles
+        ['all', 
+          ['literal', cirkel], 
+          ['!=', ['get', 'incident_type'], 'Ongeval']
+        ],
+        [
+          'case',
+          ['==', ['get', 'nummer'], 'een'], 'circle-red',
+          ['==', ['get', 'nummer'], 'twee'], 'circle-orange', 
+          ['in', ['get', 'nummer'], ['literal', ['drie', 'vier', 'vijf']]], 'circle-yellow',
+          'circle-gray' // default circle
+        ],
+        // Otherwise use triangles
+        [
+          'case',
+          ['==', ['get', 'nummer'], 'een'], 'triangle-red',
+          ['==', ['get', 'nummer'], 'twee'], 'triangle-orange',
+          ['in', ['get', 'nummer'], ['literal', ['drie', 'vier', 'vijf']]], 'triangle-yellow',
+          'triangle-gray' // default triangle
+        ]
+      ];
+      
+      // Define the icon expression for uur and vandaag layers (light gray only)
+      const uureVandaagIconExpression = [
+        'case',
+        // If cirkel is enabled AND incident_type is not 'Ongeval', use circles
+        ['all', 
+          ['literal', cirkel], 
+          ['!=', ['get', 'incident_type'], 'Ongeval']
+        ],
+        'circle-lightgray', // Light gray circle
+        'triangle-lightgray' // Light gray triangle
+      ];
+      
+      // Update actueel layer
+      try {
+        if (map.getLayer && map.getLayer('actueel-layer')) {
+          console.log('Updating actueel-layer with new circle preference');
+          map.setLayoutProperty('actueel-layer', 'icon-image', actueleIconExpression);
+        }
+      } catch (error) {
+        console.error('Error updating actueel-layer:', error);
+      }
+      
+      // Update uur and vandaag layers
+      ['uur-layer', 'vandaag-layer'].forEach(layerName => {
+        try {
+          if (map.getLayer && map.getLayer(layerName)) {
+            console.log(`Updating ${layerName} with new circle preference`);
+            map.setLayoutProperty(layerName, 'icon-image', uureVandaagIconExpression);
+          } else {
+            console.log(`Layer ${layerName} not found or map not ready`);
+          }
+        } catch (error) {
+          console.error(`Error updating layer ${layerName}:`, error);
+        }
+      });
     }
   }
 
@@ -1069,7 +1426,7 @@ import Choices from 'choices.js';
     buttonEl.classList.toggle('expanded');
     buttonEl.classList.toggle('collapsed');
     expanded = !expanded;
-    map.updateSize();
+    map.resize(); // MapLibre GL JS equivalent of ol.Map.updateSize()
   });
 
   setDateTime();

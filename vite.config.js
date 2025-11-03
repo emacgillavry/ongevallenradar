@@ -4,6 +4,7 @@ import compression from 'vite-plugin-compression'
 
 export default defineConfig({
   root: 'src', // Set src as the root directory
+  publicDir: '../public', // Public assets directory
   build: {
     outDir: '../dist', // Build output to dist directory at project root
     emptyOutDir: true, // Clear dist directory on build
@@ -19,10 +20,6 @@ export default defineConfig({
   plugins: [
     viteStaticCopy({
       targets: [
-        {
-          src: ['../vendor/openlayers/dist/ol.js', '../vendor/openlayers/dist/ol.css'],
-          dest: 'vendor/openlayers/dist'
-        },
         {
           src: 'assets/images/*',
           dest: 'assets/images'

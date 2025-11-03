@@ -1,0 +1,72 @@
+{
+  "triangle-red": {
+    "x": 0,
+    "y": 0,
+    "width": 54,
+    "height": 54,
+    "pixelRatio": 2
+  },
+  "triangle-orange": {
+    "x": 56,
+    "y": 0,
+    "width": 54,
+    "height": 54,
+    "pixelRatio": 2
+  },
+  "triangle-yellow": {
+    "x": 112,
+    "y": 0,
+    "width": 54,
+    "height": 54,
+    "pixelRatio": 2
+  },
+  "triangle-gray": {
+    "x": 168,
+    "y": 0,
+    "width": 54,
+    "height": 54,
+    "pixelRatio": 2
+  },
+  "triangle-lightgray": {
+    "x": 224,
+    "y": 0,
+    "width": 54,
+    "height": 54,
+    "pixelRatio": 2
+  },
+  "circle-red": {
+    "x": 5,
+    "y": 61,
+    "width": 44,
+    "height": 44,
+    "pixelRatio": 2
+  },
+  "circle-orange": {
+    "x": 61,
+    "y": 61,
+    "width": 44,
+    "height": 44,
+    "pixelRatio": 2
+  },
+  "circle-yellow": {
+    "x": 117,
+    "y": 61,
+    "width": 44,
+    "height": 44,
+    "pixelRatio": 2
+  },
+  "circle-gray": {
+    "x": 173,
+    "y": 61,
+    "width": 44,
+    "height": 44,
+    "pixelRatio": 2
+  },
+  "circle-lightgray": {
+    "x": 231,
+    "y": 63,
+    "width": 40,
+    "height": 40,
+    "pixelRatio": 2
+  }
+}
