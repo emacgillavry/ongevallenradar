@@ -27,12 +27,6 @@ body {
   color: #333;
 }
 
-.ol-zoom {
-  font-size: 16px;
-}
-.ol-zoom button {
-  color: white !important;
-}
 /* Choices.js customizations */
 .choices {
   font-size: 14px !important;
@@ -159,23 +153,6 @@ button {
   background-color: white;
   margin: 10px;
 }
-.attribution {
-  cursor: pointer;
-  margin-bottom: 0px;
-  font-weight: 700;
-}
-#attribution {
-  background-color: white;
-  width: 340px;
-  margin: auto;
-  z-index: 5000;
-  bottom: 10px;
-  position: fixed;
-  display: table-cell;
-  text-align:center;
-  left: 0px;
-  right: 0px;
-}
 #map {
   min-height: 735px;
   position: absolute;
@@ -184,29 +161,6 @@ button {
   background-color: white;
   width: calc(100% - 340px);
   height: 100%;
-}
-#popup {
-  display: block;
-  width: 260px;
-  height: 305px;
-  left: -130px;
-  top: -305px;
-}
-.ol-popup-closer {
-  text-decoration: none;
-  color: #337ab7;
-  position: absolute;
-  top: 2px;
-  right: 8px;
-  font-size: 20px;
-}
-
-.ol-popup-closer:hover {
-  color: #23527c;
-}
-
-.ol-popup-closer:after {
-  content: "✖";
 }
 #ms-sel-rayon li {
   color: #077395;
@@ -367,11 +321,6 @@ button {
   }
   #map {
     width: 100%;
-  }
-  #popup {
-    height: 200px;
-    overflow: auto;
-    top: -200px;
   }
 }
 
