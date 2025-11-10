@@ -783,7 +783,10 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
       'osm': {
         type: 'raster',
         tiles: [import.meta.env.VITE_TILE_SERVER_URL_TEMPLATE || 'https://kaartserver.incidentcentrale.nl/{z}/{x}/{y}.png'],
-        tileSize: 256
+        tileSize: 256,
+        minZoom: 7,
+        maxZoom: 17,
+        bounds: [2.81, 50.29, 8.43, 53.75],
       }
     };
 
@@ -827,8 +830,8 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
           id: 'osm',
           type: 'raster',
           source: 'osm',
-          minzoom: 0,
-          maxzoom: 22
+          minZoom: 7,
+          maxZoom: 17
         },
         // Generate only raster layers from layerConfig
         // Vector layers will be added properly after sprite loading
@@ -852,6 +855,9 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
     },
     center: [5.12, 52.37], // Netherlands center in WGS84
     zoom: 8,
+    maxZoom: 17,
+    minZoom: 7,
+    // maxBounds: [2.81, 50.29, 8.43, 53.75], // Netherlands bounds in WGS84
     attributionControl: false, // Disable default attribution control
     locale: {
       "AttributionControl.ToggleAttribution": "Bronvermelding",
