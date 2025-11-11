@@ -7,6 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "vite",
     "build": "vite build",
+    "build:release": "npm run build && npm run package",
+    "package": "cd dist && zip -r ../ongevallenradar-website.zip . && cd .. && tar -czf ongevallenradar-website.tar.gz -C dist .",
     "serve": "vite preview",
     "generate-sprites": "node generate-sprite-assets.js"
   },
