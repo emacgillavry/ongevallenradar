@@ -3,6 +3,7 @@ import { viteStaticCopy } from 'vite-plugin-static-copy'
 import compression from 'vite-plugin-compression'
 
 export default defineConfig({
+  base: process.env.VITE_BASE_PATH || '/', // Set base path for deployment
   root: 'src', // Set src as the root directory
   publicDir: '../public', // Public assets directory
   build: {

@@ -62,6 +62,15 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
   }
   loadRayonInfoFromCookie();
 
+  // Base path configuration for assets
+  const basePath = import.meta.env.VITE_BASE_PATH || '/';
+  const getAssetPath = (path) => {
+    // Remove leading slash from path and ensure basePath ends with slash
+    const cleanPath = path.replace(/^\//, '');
+    const cleanBasePath = basePath.endsWith('/') ? basePath : basePath + '/';
+    return cleanBasePath + cleanPath;
+  };
+
   // GeoServer configuration (must be defined before layerConfig)
   const geoserverHost = import.meta.env.VITE_WFS_HOST || 'https://geoserver.stichtingimn.nl';
   const geoserverPath = import.meta.env.VITE_WFS_PATH || '/geoserver/ows';
@@ -717,8 +726,8 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
   });
 
   const setToggleImg = () => {
-    const toggleAanImg = 'assets/images/toggle_aan.svg';
-    const toggleUitImg = 'assets/images/toggle_uit.svg';
+    const toggleAanImg = getAssetPath('assets/images/toggle_aan.svg');
+    const toggleUitImg = getAssetPath('assets/images/toggle_uit.svg');
     const filterButtonImg = document.getElementById('filter-button-img');
     filterButtonImg.src = filterRayon ? toggleUitImg : toggleAanImg;
   };
@@ -759,7 +768,7 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
   selectElement.addEventListener('removeItem', function(event) {
     selectedRayons[event.detail.value] = false;
     if (!hasRayon()) {
-      document.getElementById('filter-button-img').src = 'assets/images/toggle_aan.svg';
+      document.getElementById('filter-button-img').src = getAssetPath('assets/images/toggle_aan.svg');
       filterRayon = false;
     }
     
@@ -1115,8 +1124,8 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
   });
 
   const setBeepImg = () => {
-    const soundOnImg = 'assets/images/sound_on.svg';
-    const soundOffImg = 'assets/images/sound_off.svg';
+    const soundOnImg = getAssetPath('assets/images/sound_on.svg');
+    const soundOffImg = getAssetPath('assets/images/sound_off.svg');
     const beepButtonImg = document.getElementById('beep-button-img');
     beepButtonImg.src = allowBeep ? soundOnImg : soundOffImg;
   };
