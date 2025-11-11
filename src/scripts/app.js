@@ -717,12 +717,21 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
 
   document.getElementById('options').addEventListener('click', function(evt) {
     document.getElementById('mainoptions').style.display = 'none';
-    document.getElementById('secondaryoptions').style.display = 'block';
+    document.getElementById('secondaryoptions').style.display = 'flex';
   });
 
   document.getElementById('backtomain').addEventListener('click', function(evt) {
-    document.getElementById('mainoptions').style.display = 'block';
-    document.getElementById('secondaryoptions').style.display = 'none';
+    const mainOptions = document.getElementById('mainoptions');
+    const secondaryOptions = document.getElementById('secondaryoptions');
+    
+    // Hide secondary options first
+    secondaryOptions.style.display = 'none';
+    
+    // Show main options with proper flex display
+    mainOptions.style.display = 'flex';
+    
+    // Force a reflow to ensure proper layout recalculation
+    mainOptions.offsetHeight;
   });
 
   const setToggleImg = () => {
