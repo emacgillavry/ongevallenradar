@@ -1,13 +1,14 @@
 * {
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
 }
 
-:after,:before {
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
+:after,
+:before {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 html {
@@ -15,13 +16,14 @@ html {
   -ms-text-size-adjust: 100%;
 }
 
-html, body {
+html,
+body {
   width: 100%;
   height: 100%;
 }
 body {
   margin: 0;
-  font-family: Verdana, Arial, "Trebuchet MS", Helvetica, sans-serif !important;
+  font-family: Verdana, Arial, 'Trebuchet MS', Helvetica, sans-serif !important;
   font-size: 14px !important;
   line-height: 1.42857143;
   color: #333;
@@ -65,7 +67,8 @@ button {
   -webkit-flex-direction: column;
   flex-direction: column;
 }
-#filter-melder, #filter-type {
+#filter-melder,
+#filter-type {
   margin: 30px 0px 25px 30px;
 }
 #cirkel-pech {
@@ -137,7 +140,7 @@ button {
   font-weight: bold;
   width: 100%;
   text-align: center;
-  color: #83B9CA;
+  color: #83b9ca;
 }
 #hour {
   font-size: 50px;
@@ -147,7 +150,7 @@ button {
   margin: -10px 0px 0px 0px;
 }
 .between {
-  border: 1px solid #D3E6EC;
+  border: 1px solid #d3e6ec;
 }
 #legendfooter {
   background-color: white;
@@ -169,7 +172,7 @@ button {
   min-height: 735px;
   height: 100%;
   width: 15px;
-  background-color: #D3E6EC;
+  background-color: #d3e6ec;
   right: 325px;
   position: absolute;
   top: 0px;
@@ -184,12 +187,13 @@ button {
   top: 0px;
   overflow: auto;
 }
-#options, #backtomain {
+#options,
+#backtomain {
   padding-top: 10px;
   padding-bottom: 10px;
   font-size: 18px;
   line-height: 1.42857143;
-  font-family: Verdana, Arial, "Trebuchet MS", Helvetica, sans-serif;
+  font-family: Verdana, Arial, 'Trebuchet MS', Helvetica, sans-serif;
 }
 #mainoptions {
   width: 100%;
@@ -220,12 +224,12 @@ button {
 }
 .bordertext {
   text-align: right;
-  color: #D3E6EC;
+  color: #d3e6ec;
 }
 
 /* Simple CSS checkmark icon to replace Material Icons */
 .mi-check::before {
-  content: "✓";
+  content: '✓';
   font-weight: bold;
   color: #077395;
 }
@@ -337,7 +341,9 @@ button {
 .form-control:focus {
   border-color: #66afe9;
   outline: 0;
-  box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102,175,233,.6);
+  box-shadow:
+    inset 0 1px 1px rgba(0, 0, 0, 0.075),
+    0 0 8px rgba(102, 175, 233, 0.6);
 }
 
 /* Table styles - consolidated */
@@ -348,7 +354,8 @@ table {
 }
 
 /* General table cell styles */
-td, th {
+td,
+th {
   padding: 0;
   vertical-align: middle;
 }
@@ -357,7 +364,7 @@ td, th {
 .popover {
   max-width: 276px;
   padding: 1px;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 14px;
   font-style: normal;
   font-weight: 400;
@@ -395,25 +402,25 @@ td, th {
 }
 
 /* Bootstrap .table enhanced rules (extracted) - ensure popup tables match Bootstrap visuals */
-.table>thead>tr>th,
-.table>thead>tr>td,
-.table>tbody>tr>th,
-.table>tbody>tr>td,
-.table>tfoot>tr>th,
-.table>tfoot>tr>td {
+.table > thead > tr > th,
+.table > thead > tr > td,
+.table > tbody > tr > th,
+.table > tbody > tr > td,
+.table > tfoot > tr > th,
+.table > tfoot > tr > td {
   padding: 8px;
   line-height: 1.42857143;
   vertical-align: top;
   border-top: 1px solid #ddd;
 }
 
-.table>thead>tr>th {
+.table > thead > tr > th {
   vertical-align: bottom;
   border-bottom: 2px solid #ddd;
 }
 
 .maplibregl-popup-content {
-  border: 1px solid rgba(0,0,0,.2) !important;
+  border: 1px solid rgba(0, 0, 0, 0.2) !important;
   border-radius: 6px !important;
   padding: 0 !important;
 }
@@ -436,7 +443,7 @@ button.maplibregl-popup-close-button:hover {
 
 /* MapLibre ZOOM CONTROLS Styling */
 .maplibregl-ctrl-group:not(:empty) {
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, .5) !important;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5) !important;
 }
 .maplibregl-ctrl-group {
   background: rgb(51%, 73%, 79%) !important;
@@ -450,15 +457,14 @@ button.maplibregl-popup-close-button:hover {
   background-image: url(data:image/svg+xml;charset=utf8,<svg%20viewBox%3D%270%200%2020%2020%27%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27>%0A%20%20<path%20style%3D%27fill%3A%23ffffff%3B%27%20d%3D%27m%207%2C9%20c%20-0.554%2C0%20-1%2C0.446%20-1%2C1%200%2C0.554%200.446%2C1%201%2C1%20l%206%2C0%20c%200.554%2C0%201%2C-0.446%201%2C-1%200%2C-0.554%20-0.446%2C-1%20-1%2C-1%20z%27%20%2F>%0A<%2Fsvg>%0A) !important;
 }
 
-
 /* MapLibre Attribution Control Styling */
 
 .maplibregl-ctrl-attrib-button {
-    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill-rule='evenodd' viewBox='0 0 20 20'%3E%3Cpath fill='%234495AF' d='M4 10a6 6 0 1 0 12 0 6 6 0 1 0-12 0m5-3a1 1 0 1 0 2 0 1 1 0 1 0-2 0m0 3a1 1 0 1 1 2 0v3a1 1 0 1 1-2 0'/%3E%3C/svg%3E") !important;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill-rule='evenodd' viewBox='0 0 20 20'%3E%3Cpath fill='%234495AF' d='M4 10a6 6 0 1 0 12 0 6 6 0 1 0-12 0m5-3a1 1 0 1 0 2 0 1 1 0 1 0-2 0m0 3a1 1 0 1 1 2 0v3a1 1 0 1 1-2 0'/%3E%3C/svg%3E") !important;
 }
 
 .maplibregl-ctrl-attrib a {
-  font-family: Verdana, Arial, "Trebuchet MS", Helvetica, sans-serif !important;
+  font-family: Verdana, Arial, 'Trebuchet MS', Helvetica, sans-serif !important;
   font-size: 14px !important;
   color: #077395 !important;
   cursor: pointer !important;
@@ -468,7 +474,6 @@ button.maplibregl-popup-close-button:hover {
 .maplibregl-ctrl-attrib a:hover,
 .maplibregl-ctrl-attrib a:active,
 .maplibregl-ctrl-attrib a:visited {
-    color: #077395 !important;
-    text-decoration: none !important;
+  color: #077395 !important;
+  text-decoration: none !important;
 }
-

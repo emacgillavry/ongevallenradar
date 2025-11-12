@@ -10,33 +10,33 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
 // Sprite uses absolute URL (MapLibre requirement) - loads /sprite.png and /sprite.json automatically
 
 // Start the main application code
-(function() {
+(function () {
   // Cookie config
   const cookieName = 'ongevallenradar';
   let cookieInfo;
-  const loadCookie = function() {
+  const loadCookie = function () {
     const cookieValue = Cookies.get(cookieName);
     cookieInfo = cookieValue ? JSON.parse(cookieValue) : null;
-  }
+  };
   loadCookie();
   // Filter types
   let filterType;
   let selectedTypes;
   const defaultTypes = {
     0: true,
-    1: true
+    1: true,
   };
-  const loadTypesFromCookie = function() {
+  const loadTypesFromCookie = function () {
     filterType = cookieInfo ? cookieInfo.filterType : false;
     selectedTypes = cookieInfo ? cookieInfo.selectedTypes : defaultTypes;
-  }
+  };
   loadTypesFromCookie();
 
   // Beep configuration
   let allowBeep;
-  const loadBeepFromCookie = function() {
+  const loadBeepFromCookie = function () {
     allowBeep = cookieInfo ? cookieInfo.allowBeep : true;
-  }
+  };
   loadBeepFromCookie();
   // Melder configuration
   const selectedMelders = {};
@@ -48,19 +48,19 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
     2: true,
     3: true,
     4: true,
-    5: true
+    5: true,
   };
-  const loadMelderInfoFromCookie = function() {
+  const loadMelderInfoFromCookie = function () {
     selectedMeldersCat = cookieInfo ? cookieInfo.selectedMeldersCat : defaultMeldersCat;
     filterMelder = cookieInfo ? cookieInfo.filterMelder : false;
-  }
+  };
   loadMelderInfoFromCookie();
   let selectedRayons;
   let filterRayon;
-  const loadRayonInfoFromCookie = function() {
+  const loadRayonInfoFromCookie = function () {
     selectedRayons = cookieInfo ? cookieInfo.selectedRayons : {};
     filterRayon = cookieInfo ? cookieInfo.filterRayon : false;
-  }
+  };
   loadRayonInfoFromCookie();
 
   // Base path configuration for assets
@@ -79,54 +79,54 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
 
   // Unified layer configuration with metadata and default visibility
   const layerConfig = {
-    actueel: { 
-      title: 'Actuele meldingen', 
-      type: 'vector', 
+    actueel: {
+      title: 'Actuele meldingen',
+      type: 'vector',
       defaultVisible: true,
-      order: 1,        // UI checkbox order
-      zIndex: 50,      // Map drawing order (highest - on top)
-      sourceUrl: `${geoserverUrl}service=WFS&request=GetFeature&typename=meldingen:actueel&version=1.1.0&srsname=EPSG:4326&outputFormat=application/json`
+      order: 1, // UI checkbox order
+      zIndex: 50, // Map drawing order (highest - on top)
+      sourceUrl: `${geoserverUrl}service=WFS&request=GetFeature&typename=meldingen:actueel&version=1.1.0&srsname=EPSG:4326&outputFormat=application/json`,
     },
-    uur: { 
-      title: 'Meldingen laatste zestig minuten', 
-      type: 'vector', 
+    uur: {
+      title: 'Meldingen laatste zestig minuten',
+      type: 'vector',
       defaultVisible: true,
-      order: 2,        // UI checkbox order
-      zIndex: 40,      // Map drawing order (below actueel)
-      sourceUrl: `${geoserverUrl}service=WFS&request=GetFeature&typename=meldingen:uur&version=1.1.0&srsname=EPSG:4326&outputFormat=application/json`
+      order: 2, // UI checkbox order
+      zIndex: 40, // Map drawing order (below actueel)
+      sourceUrl: `${geoserverUrl}service=WFS&request=GetFeature&typename=meldingen:uur&version=1.1.0&srsname=EPSG:4326&outputFormat=application/json`,
     },
-    vandaag: { 
-      title: 'Meldingen vandaag', 
-      type: 'vector', 
+    vandaag: {
+      title: 'Meldingen vandaag',
+      type: 'vector',
       defaultVisible: false,
-      order: 3,        // UI checkbox order
-      zIndex: 30,      // Map drawing order (below uur)
-      sourceUrl: `${geoserverUrl}service=WFS&request=GetFeature&typename=meldingen:vandaag&version=1.1.0&srsname=EPSG:4326&outputFormat=application/json`
+      order: 3, // UI checkbox order
+      zIndex: 30, // Map drawing order (below uur)
+      sourceUrl: `${geoserverUrl}service=WFS&request=GetFeature&typename=meldingen:vandaag&version=1.1.0&srsname=EPSG:4326&outputFormat=application/json`,
     },
-    imwegen: { 
-      title: 'IM-wegen', 
-      type: 'raster', 
+    imwegen: {
+      title: 'IM-wegen',
+      type: 'raster',
       defaultVisible: false,
-      order: 4,        // UI checkbox order
-      zIndex: 10,      // Map drawing order (overlay layer)
-      sourceUrl: `${geoserverUrl}service=WMS&request=GetMap&layers=im_wegen:imwegen&styles=&format=image%2Fpng&transparent=true&version=1.1.1&width=256&height=256&srs=EPSG%3A3857&bbox={bbox-epsg-3857}`
+      order: 4, // UI checkbox order
+      zIndex: 10, // Map drawing order (overlay layer)
+      sourceUrl: `${geoserverUrl}service=WMS&request=GetMap&layers=im_wegen:imwegen&styles=&format=image%2Fpng&transparent=true&version=1.1.1&width=256&height=256&srs=EPSG%3A3857&bbox={bbox-epsg-3857}`,
     },
-    bps: { 
-      title: 'Hectometerpalen', 
-      type: 'raster', 
+    bps: {
+      title: 'Hectometerpalen',
+      type: 'raster',
       defaultVisible: false,
-      order: 5,        // UI checkbox order
-      zIndex: 20,      // Map drawing order (overlay layer)
-      sourceUrl: `${geoserverUrl}service=WMS&request=GetMap&layers=bps:bps_palen&styles=&format=image%2Fpng&transparent=true&version=1.1.1&width=256&height=256&srs=EPSG%3A3857&bbox={bbox-epsg-3857}`
+      order: 5, // UI checkbox order
+      zIndex: 20, // Map drawing order (overlay layer)
+      sourceUrl: `${geoserverUrl}service=WMS&request=GetMap&layers=bps:bps_palen&styles=&format=image%2Fpng&transparent=true&version=1.1.1&width=256&height=256&srs=EPSG%3A3857&bbox={bbox-epsg-3857}`,
     },
-    rayons: { 
-      title: 'Rayons', 
-      type: 'raster', 
+    rayons: {
+      title: 'Rayons',
+      type: 'raster',
       defaultVisible: false,
-      order: 6,        // UI checkbox order
-      zIndex: 15,      // Map drawing order (base overlay layer)
-      sourceUrl: `${geoserverUrl}service=WMS&request=GetMap&layers=rayons:rayons&styles=&format=image%2Fpng&transparent=true&version=1.1.1&width=256&height=256&srs=EPSG%3A3857&bbox={bbox-epsg-3857}`
-    }
+      order: 6, // UI checkbox order
+      zIndex: 15, // Map drawing order (base overlay layer)
+      sourceUrl: `${geoserverUrl}service=WMS&request=GetMap&layers=rayons:rayons&styles=&format=image%2Fpng&transparent=true&version=1.1.1&width=256&height=256&srs=EPSG%3A3857&bbox={bbox-epsg-3857}`,
+    },
   };
 
   // Extract default visibility settings from layerConfig
@@ -136,17 +136,17 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
   }, {});
 
   let layerInfo;
-  const loadLayerInfoFromCookie = function() {
+  const loadLayerInfoFromCookie = function () {
     layerInfo = cookieInfo ? cookieInfo.layers : defaultLayerInfo;
-  }
+  };
   loadLayerInfoFromCookie();
 
   // Cirkel configuration
   let cirkel;
-  const loadCirkelFromCookie = function() {
+  const loadCirkelFromCookie = function () {
     cirkel = cookieInfo ? cookieInfo.cirkel : false;
     document.getElementById('cirkel').checked = cirkel;
-  }
+  };
   loadCirkelFromCookie();
 
   const rayons = [
@@ -373,101 +373,8 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
     'ZH181',
     'ZH185',
     'ZH186',
-    'ZH163a'
+    'ZH163a',
   ];
-
-  // TODO: Convert OpenLayers styles to MapLibre GL JS style specifications
-  // Temporarily commented out to prevent ol.style errors during migration
-  /*
-  const imageStyles = {
-    actueel: {
-      een: {
-        normal: new ol.style.RegularShape({
-          fill: new ol.style.Fill({color: '#FF0000'}),
-          stroke: new ol.style.Stroke({color: '#990000', width: 2}),
-          points: 3,
-          radius: 13.5,
-          angle: 0
-        }),
-        circle: new ol.style.Circle({
-          fill: new ol.style.Fill({color: '#FF0000'}),
-          stroke: new ol.style.Stroke({color: '#990000', width: 2}),
-          radius: 9
-        })
-      },
-      twee: {
-        normal: new ol.style.RegularShape({
-          fill: new ol.style.Fill({color: '#FF6600'}),
-          stroke: new ol.style.Stroke({color: '#B84F09', width: 2}),
-          points: 3,
-          radius: 13.5,
-          angle: 0
-        }),
-        circle: new ol.style.Circle({
-          fill: new ol.style.Fill({color: '#FF6600'}),
-          stroke: new ol.style.Stroke({color: '#B84F09', width: 2}),
-          radius: 9
-        })
-      },
-      drie: {
-        normal: new ol.style.RegularShape({
-          fill: new ol.style.Fill({color: 'yellow'}),
-          stroke: new ol.style.Stroke({color: '#99990B', width: 2}),
-          points: 3,
-          radius: 13.5,
-          angle: 0
-        }),
-        circle: new ol.style.Circle({
-          fill: new ol.style.Fill({color: 'yellow'}),
-          stroke: new ol.style.Stroke({color: '#99990B', width: 2}),
-          radius: 9
-        })
-      },
-      vier: {
-        normal: new ol.style.RegularShape({
-          fill: new ol.style.Fill({color: 'yellow'}),
-          stroke: new ol.style.Stroke({color: '#99990B', width: 2}),
-          points: 3,
-          radius: 13.5,
-          angle: 0
-        }),
-        circle: new ol.style.Circle({
-          fill: new ol.style.Fill({color: 'yellow'}),
-          stroke: new ol.style.Stroke({color: '#99990B', width: 2}),
-          radius: 9
-        })
-      },
-      vijf: {
-        normal: new ol.style.RegularShape({
-          fill: new ol.style.Fill({color: 'yellow'}),
-          stroke: new ol.style.Stroke({color: '#99990B', width: 2}),
-          points: 3,
-          radius: 13.5,
-          angle: 0
-        }),
-        circle: new ol.style.Circle({
-          fill: new ol.style.Fill({color: 'yellow'}),
-          stroke: new ol.style.Stroke({color: '#99990B', width: 2}),
-          radius: 9
-        })
-      }
-    },
-    uur: {
-      normal: new ol.style.RegularShape({
-        fill: new ol.style.Fill({color: '#E5E5E5'}),
-        stroke: new ol.style.Stroke({color: '#4C4C4C', width: 2}),
-        points: 3,
-        radius: 10,
-        angle: 0
-      }),
-      circle: new ol.style.Circle({
-        fill: new ol.style.Fill({color: '#E5E5E5'}),
-        stroke: new ol.style.Stroke({color: '#4C4C4C', width: 2}),
-        radius: 8
-      })
-    }
-  };
-  */
 
   // Placeholder for MapLibre GL JS styles (to be implemented)
   const imageStyles = {};
@@ -476,7 +383,7 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
   const existingFeatures = {
     actueel: new Set(),
     uur: new Set(),
-    vandaag: new Set()
+    vandaag: new Set(),
   };
 
   // Unified GeoJSON loading function for MapLibre
@@ -492,35 +399,35 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const geojsonData = await response.json();
-      
+
       // Check for new features and handle beeping (only for actueel layer)
       if (layerKey === 'actueel' && allowBeep && geojsonData.features) {
         let shouldBeep = false;
-        
+
         // Check each feature to see if it's new
         for (const feature of geojsonData.features) {
           const meldnr = feature.properties?.meldnr;
           if (meldnr && !existingFeatures[layerKey].has(meldnr)) {
             // This is a new feature - check if it passes filters
             const mockFeature = {
-              get: (prop) => feature.properties?.[prop]
+              get: (prop) => feature.properties?.[prop],
             };
-            
+
             if (filterFunction(mockFeature)) {
               shouldBeep = true;
             }
           }
         }
-        
+
         // Update the tracking set with current feature IDs
         existingFeatures[layerKey].clear();
-        geojsonData.features.forEach(feature => {
+        geojsonData.features.forEach((feature) => {
           const meldnr = feature.properties?.meldnr;
           if (meldnr) {
             existingFeatures[layerKey].add(meldnr);
           }
         });
-        
+
         // Beep if we found new features that pass filters
         if (shouldBeep) {
           beep();
@@ -528,23 +435,23 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
       } else if (geojsonData.features) {
         // For non-actueel layers, just update the tracking set without beeping
         existingFeatures[layerKey].clear();
-        geojsonData.features.forEach(feature => {
+        geojsonData.features.forEach((feature) => {
           const meldnr = feature.properties?.meldnr;
           if (meldnr) {
             existingFeatures[layerKey].add(meldnr);
           }
         });
       }
-      
+
       // Cache the raw data for filtering without refetching
       rawDataCache[layerKey] = geojsonData;
-      
+
       // Apply filtering to the data before updating the map
       const filteredData = filterGeoJSON(geojsonData);
-      
+
       // Update the map source with filtered data
       map.getSource(layerKey).setData(filteredData);
-      
+
       return { success: true, data: filteredData, layerKey: layerKey };
     } catch (error) {
       console.error(`Error loading ${layerKey} data:`, error);
@@ -559,7 +466,7 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
   const rawDataCache = {
     actueel: null,
     uur: null,
-    vandaag: null
+    vandaag: null,
   };
 
   // Apply current filters to already loaded data without refetching
@@ -569,10 +476,12 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
       console.log(`No cached data for ${layerKey}, skipping filter application`);
       return;
     }
-    
+
     const filteredData = filterGeoJSON(rawData);
     map.getSource(layerKey).setData(filteredData);
-    console.log(`Applied filters to ${layerKey}: ${filteredData.features.length}/${rawData.features.length} features shown`);
+    console.log(
+      `Applied filters to ${layerKey}: ${filteredData.features.length}/${rawData.features.length} features shown`
+    );
   };
 
   // Filter GeoJSON data based on current filter settings
@@ -581,17 +490,17 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
       return geojsonData;
     }
 
-    const filteredFeatures = geojsonData.features.filter(feature => {
+    const filteredFeatures = geojsonData.features.filter((feature) => {
       // Create mock feature object for compatibility with existing filterFunction
       const mockFeature = {
-        get: (prop) => feature.properties?.[prop]
+        get: (prop) => feature.properties?.[prop],
       };
       return filterFunction(mockFeature);
     });
 
     return {
       ...geojsonData,
-      features: filteredFeatures
+      features: filteredFeatures,
     };
   };
 
@@ -603,28 +512,28 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
         return false;
       }
     }
-    
-    // Melder filter  
+
+    // Melder filter
     if (filterMelder) {
       const melder = feature.get('melder').toLowerCase();
       if (selectedMelders[melder] === false) {
         return false;
       }
     }
-    
+
     // Type filter
     if (filterType) {
       const incidentType = feature.get('incident_type');
       const showOngevallen = selectedTypes['0'];
       const showOverig = selectedTypes['1'];
-      
+
       if (!showOngevallen && !showOverig) return false;
       if (showOngevallen && !showOverig) return incidentType === 'Ongeval';
       if (!showOngevallen && showOverig) return incidentType !== 'Ongeval';
       // Both selected - show all
       return true;
     }
-    
+
     return true;
   };
 
@@ -640,20 +549,20 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
     noResultsText: 'Geen resultaten gevonden',
     noChoicesText: 'Geen keuzes beschikbaar',
     placeholderValue: 'Selecteer rayons...',
-    choices: rayons.map(function(rayon) {
+    choices: rayons.map(function (rayon) {
       return {
         value: rayon,
         label: rayon,
-        selected: selectedRayons[rayon] === true
+        selected: selectedRayons[rayon] === true,
       };
-    })
+    }),
   });
 
   // Function to update placeholder visibility based on selected items
   const updateRayonPlaceholder = () => {
     const hasSelectedItems = rayonChoices.getValue().length > 0;
     const inputElement = selectElement.parentNode.querySelector('.choices__input--cloned');
-    
+
     if (inputElement) {
       if (hasSelectedItems) {
         inputElement.placeholder = '';
@@ -676,10 +585,10 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
     updateRayonPlaceholder();
   }, 100);
 
-  const hasRayon = () => Object.values(selectedRayons).some(selected => selected === true);
+  const hasRayon = () => Object.values(selectedRayons).some((selected) => selected === true);
 
   // Function to save current settings to cookies
-  const saveToCookie = function() {
+  const saveToCookie = function () {
     const json = {};
     json.layers = layerInfo; // Use current layerInfo object directly
     json.filterRayon = filterRayon;
@@ -693,15 +602,15 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
     Cookies.set(cookieName, JSON.stringify(json));
   };
 
-  document.getElementById('save').addEventListener('click', function(evt) {
+  document.getElementById('save').addEventListener('click', function (evt) {
     saveToCookie();
   });
 
-  document.getElementById('clear').addEventListener('click', function(evt) {
+  document.getElementById('clear').addEventListener('click', function (evt) {
     Cookies.remove(cookieName);
     loadCookie();
     loadCirkelFromCookie();
-    onChangeCirkel({target: document.getElementById('cirkel')})
+    onChangeCirkel({ target: document.getElementById('cirkel') });
     loadLayerInfoFromCookie();
     applyLayerVisbility();
     loadRayonInfoFromCookie();
@@ -716,21 +625,21 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
     setTypeFilter();
   });
 
-  document.getElementById('options').addEventListener('click', function(evt) {
+  document.getElementById('options').addEventListener('click', function (evt) {
     document.getElementById('mainoptions').style.display = 'none';
     document.getElementById('secondaryoptions').style.display = 'flex';
   });
 
-  document.getElementById('backtomain').addEventListener('click', function(evt) {
+  document.getElementById('backtomain').addEventListener('click', function (evt) {
     const mainOptions = document.getElementById('mainoptions');
     const secondaryOptions = document.getElementById('secondaryoptions');
-    
+
     // Hide secondary options first
     secondaryOptions.style.display = 'none';
-    
+
     // Show main options with proper flex display
     mainOptions.style.display = 'flex';
-    
+
     // Force a reflow to ensure proper layout recalculation
     mainOptions.offsetHeight;
   });
@@ -742,54 +651,56 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
     filterButtonImg.src = filterRayon ? toggleUitImg : toggleAanImg;
   };
   setToggleImg();
-  document.getElementById('filter-button').addEventListener('click', function(evt){ 
+  document.getElementById('filter-button').addEventListener('click', function (evt) {
     if (!hasRayon()) {
       return;
     }
     filterRayon = !filterRayon;
     setToggleImg();
-    
+
     // Apply filters to cached data instead of refetching
-    Object.keys(layerConfig).forEach(layerKey => {
+    Object.keys(layerConfig).forEach((layerKey) => {
       if (layerConfig[layerKey].type === 'vector') {
         applyFiltersToLayer(layerKey);
       }
     });
   });
   // Add Choices.js event listeners
-  selectElement.addEventListener('addItem', function(event) {
+  selectElement.addEventListener('addItem', function (event) {
     selectedRayons[event.detail.value] = true;
     filterRayon = true;
-    
+
     // Update placeholder visibility
     updateRayonPlaceholder();
-    
+
     // Save to cookie automatically
     saveToCookie();
-    
+
     // Apply filters to cached data instead of refetching
-    Object.keys(layerConfig).forEach(layerKey => {
+    Object.keys(layerConfig).forEach((layerKey) => {
       if (layerConfig[layerKey].type === 'vector') {
         applyFiltersToLayer(layerKey);
       }
     });
   });
-  
-  selectElement.addEventListener('removeItem', function(event) {
+
+  selectElement.addEventListener('removeItem', function (event) {
     selectedRayons[event.detail.value] = false;
     if (!hasRayon()) {
-      document.getElementById('filter-button-img').src = getAssetPath('assets/images/toggle_aan.svg');
+      document.getElementById('filter-button-img').src = getAssetPath(
+        'assets/images/toggle_aan.svg'
+      );
       filterRayon = false;
     }
-    
+
     // Update placeholder visibility
     updateRayonPlaceholder();
-    
+
     // Save to cookie automatically
     saveToCookie();
-    
+
     // Apply filters to cached data instead of refetching
-    Object.keys(layerConfig).forEach(layerKey => {
+    Object.keys(layerConfig).forEach((layerKey) => {
       if (layerConfig[layerKey].type === 'vector') {
         applyFiltersToLayer(layerKey);
       }
@@ -799,35 +710,38 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
   // Helper function to generate sources from layerConfig
   const generateSources = () => {
     const sources = {
-      'osm': {
+      osm: {
         type: 'raster',
-        tiles: [import.meta.env.VITE_TILE_SERVER_URL_TEMPLATE || 'https://kaartserver.incidentcentrale.nl/{z}/{x}/{y}.png'],
+        tiles: [
+          import.meta.env.VITE_TILE_SERVER_URL_TEMPLATE ||
+            'https://kaartserver.incidentcentrale.nl/{z}/{x}/{y}.png',
+        ],
         tileSize: 256,
         minZoom: 7,
         maxZoom: 17,
         bounds: [2.81, 50.29, 8.43, 53.75],
-      }
+      },
     };
 
     // Add sources from layerConfig
-    Object.keys(layerConfig).forEach(layerId => {
+    Object.keys(layerConfig).forEach((layerId) => {
       const layerDef = layerConfig[layerId];
-      
+
       if (layerDef.type === 'vector') {
         // Vector sources start with empty data, loaded dynamically
         sources[layerId] = {
           type: 'geojson',
           data: {
             type: 'FeatureCollection',
-            features: []
-          }
+            features: [],
+          },
         };
       } else if (layerDef.type === 'raster') {
         // Raster sources use WMS tiles
         sources[layerId + '-wms'] = {
           type: 'raster',
           tiles: [layerDef.sourceUrl],
-          tileSize: 256
+          tileSize: 256,
         };
       }
     });
@@ -850,27 +764,27 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
           type: 'raster',
           source: 'osm',
           minZoom: 7,
-          maxZoom: 17
+          maxZoom: 17,
         },
         // Generate only raster layers from layerConfig
         // Vector layers will be added properly after sprite loading
         // Sort by zIndex for proper map drawing order (lower zIndex = drawn first/behind)
         ...Object.keys(layerConfig)
-          .filter(layerId => layerConfig[layerId].type === 'raster')
+          .filter((layerId) => layerConfig[layerId].type === 'raster')
           .sort((a, b) => layerConfig[a].zIndex - layerConfig[b].zIndex)
-          .map(layerId => {
+          .map((layerId) => {
             const layerDef = layerConfig[layerId];
-            
+
             return {
               id: layerId,
               type: 'raster',
               source: layerId + '-wms',
               layout: {
-                visibility: layerInfo[layerId] ? 'visible' : 'none'
-              }
+                visibility: layerInfo[layerId] ? 'visible' : 'none',
+              },
             };
-          })
-      ]
+          }),
+      ],
     },
     center: [5.12, 52.37], // Netherlands center in WGS84
     zoom: 8,
@@ -879,83 +793,90 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
     // maxBounds: [2.81, 50.29, 8.43, 53.75], // Netherlands bounds in WGS84
     attributionControl: false, // Disable default attribution control
     locale: {
-      "AttributionControl.ToggleAttribution": "Bronvermelding",
+      'AttributionControl.ToggleAttribution': 'Bronvermelding',
 
-      "NavigationControl.ZoomIn": "Zoom in",
-      "NavigationControl.ZoomOut": "Zoom uit",
+      'NavigationControl.ZoomIn': 'Zoom in',
+      'NavigationControl.ZoomOut': 'Zoom uit',
     },
-    dragRotate: false,      // Disable map rotation with right-click + drag
+    dragRotate: false, // Disable map rotation with right-click + drag
     touchZoomRotate: false, // Disable rotation on touch devices
     pitchWithRotate: false, // Disable pitch when rotating
-    touchPitch: false       // Disable pitch on touch devices
+    touchPitch: false, // Disable pitch on touch devices
   });
 
   // Add zoom control to the map (zoom buttons only, no compass)
-  map.addControl(new NavigationControl({
-    showCompass: false,
-    showZoom: true
-  }), 'top-left');
+  map.addControl(
+    new NavigationControl({
+      showCompass: false,
+      showZoom: true,
+    }),
+    'top-left'
+  );
 
   // Add custom attribution control without MapLibre prefix (collapsible)
-  map.addControl(new AttributionControl({
-    customAttribution: '<a href="https://www.openstreetmap.org/copyright">&copy; OpenStreetMap contributors</a>',
-    compact: true
-  }), 'bottom-right');
+  map.addControl(
+    new AttributionControl({
+      customAttribution:
+        '<a href="https://www.openstreetmap.org/copyright">&copy; OpenStreetMap contributors</a>',
+      compact: true,
+    }),
+    'bottom-right'
+  );
 
   // Load initial data for visible layers
   map.on('load', async () => {
     try {
       // Sprite is automatically loaded from /sprite.png and /sprite.json by MapLibre
       console.log('Map loaded with sprite support');
-      
+
       // Create all vector layers with proper sprite-based styling
       // These layers were not created in the initial style - we add them here once sprites are loaded
-      
+
       // Define the dynamic icon expression for actueel layer (priority-based colors)
       const actueleIconExpression = [
         'case',
         // If cirkel is enabled AND incident_type is not 'Ongeval', use circles
-        ['all', 
-          ['literal', cirkel], 
-          ['!=', ['get', 'incident_type'], 'Ongeval']
-        ],
+        ['all', ['literal', cirkel], ['!=', ['get', 'incident_type'], 'Ongeval']],
         [
           'case',
-          ['==', ['get', 'nummer'], 'een'], 'circle-red',
-          ['==', ['get', 'nummer'], 'twee'], 'circle-orange', 
-          ['in', ['get', 'nummer'], ['literal', ['drie', 'vier', 'vijf']]], 'circle-yellow',
-          'circle-gray' // default circle
+          ['==', ['get', 'nummer'], 'een'],
+          'circle-red',
+          ['==', ['get', 'nummer'], 'twee'],
+          'circle-orange',
+          ['in', ['get', 'nummer'], ['literal', ['drie', 'vier', 'vijf']]],
+          'circle-yellow',
+          'circle-gray', // default circle
         ],
         // Otherwise use triangles
         [
           'case',
-          ['==', ['get', 'nummer'], 'een'], 'triangle-red',
-          ['==', ['get', 'nummer'], 'twee'], 'triangle-orange',
-          ['in', ['get', 'nummer'], ['literal', ['drie', 'vier', 'vijf']]], 'triangle-yellow',
-          'triangle-gray' // default triangle
-        ]
+          ['==', ['get', 'nummer'], 'een'],
+          'triangle-red',
+          ['==', ['get', 'nummer'], 'twee'],
+          'triangle-orange',
+          ['in', ['get', 'nummer'], ['literal', ['drie', 'vier', 'vijf']]],
+          'triangle-yellow',
+          'triangle-gray', // default triangle
+        ],
       ];
-      
+
       // Define the icon expression for uur and vandaag layers (light gray only)
       const uureVandaagIconExpression = [
         'case',
         // If cirkel is enabled AND incident_type is not 'Ongeval', use circles
-        ['all', 
-          ['literal', cirkel], 
-          ['!=', ['get', 'incident_type'], 'Ongeval']
-        ],
+        ['all', ['literal', cirkel], ['!=', ['get', 'incident_type'], 'Ongeval']],
         'circle-lightgray', // Light gray circle
-        'triangle-lightgray' // Light gray triangle
+        'triangle-lightgray', // Light gray triangle
       ];
-      
+
       // Helper function to get insertion point for proper layer ordering by zIndex
       const getLayerInsertionPoint = (targetZIndex) => {
         const layers = map.getStyle().layers;
         for (let i = layers.length - 1; i >= 0; i--) {
           const layer = layers[i];
           // Find corresponding layer configuration
-          const layerConfigEntry = Object.entries(layerConfig).find(([key, config]) => 
-            config.type === 'raster' && layer.id === key
+          const layerConfigEntry = Object.entries(layerConfig).find(
+            ([key, config]) => config.type === 'raster' && layer.id === key
           );
           if (layerConfigEntry && layerConfigEntry[1].zIndex < targetZIndex) {
             return layer.id;
@@ -963,46 +884,64 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
         }
         return undefined; // Insert at the bottom
       };
-      
+
       // Add vector layers in zIndex order to ensure proper layering
       const vectorLayers = [
-        { id: 'vandaag', zIndex: layerConfig.vandaag.zIndex, expression: uureVandaagIconExpression, size: 1.0 },
-        { id: 'uur', zIndex: layerConfig.uur.zIndex, expression: uureVandaagIconExpression, size: 1.0 },
-        { id: 'actueel', zIndex: layerConfig.actueel.zIndex, expression: actueleIconExpression, size: 1.0 }
+        {
+          id: 'vandaag',
+          zIndex: layerConfig.vandaag.zIndex,
+          expression: uureVandaagIconExpression,
+          size: 1.0,
+        },
+        {
+          id: 'uur',
+          zIndex: layerConfig.uur.zIndex,
+          expression: uureVandaagIconExpression,
+          size: 1.0,
+        },
+        {
+          id: 'actueel',
+          zIndex: layerConfig.actueel.zIndex,
+          expression: actueleIconExpression,
+          size: 1.0,
+        },
       ];
-      
+
       // Sort by zIndex to add in correct order
       vectorLayers.sort((a, b) => a.zIndex - b.zIndex);
-      
+
       vectorLayers.forEach(({ id, expression, size }) => {
         const layerName = id + '-layer';
         const beforeLayerId = getLayerInsertionPoint(layerConfig[id].zIndex);
-        
+
         // Add symbol layer for icons
-        map.addLayer({
-          id: layerName,
-          type: 'symbol',
-          source: id,
-          layout: {
-            visibility: layerInfo[id] ? 'visible' : 'none',
-            'icon-image': expression,
-            'icon-size': size,
-            'icon-allow-overlap': true,
-            'icon-ignore-placement': true
-          }
-        }, beforeLayerId);
-        
+        map.addLayer(
+          {
+            id: layerName,
+            type: 'symbol',
+            source: id,
+            layout: {
+              visibility: layerInfo[id] ? 'visible' : 'none',
+              'icon-image': expression,
+              'icon-size': size,
+              'icon-allow-overlap': true,
+              'icon-ignore-placement': true,
+            },
+          },
+          beforeLayerId
+        );
+
         // Add text layer for labels
         const textLayerName = id + '-labels';
         const textExpression = [
           'concat',
           ['get', 'bps'],
           '\n',
-          ['get', 'tijdstip'], 
+          ['get', 'tijdstip'],
           '\n',
-          ['get', 'incident_type']
+          ['get', 'incident_type'],
         ];
-        
+
         // Configure text layer based on layer type
         const textLayerConfig = {
           id: textLayerName,
@@ -1016,15 +955,15 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
             'text-offset': [0, -3],
             'text-anchor': 'center',
             'text-allow-overlap': true,
-            'text-ignore-placement': false
+            'text-ignore-placement': false,
           },
           paint: {
             'text-color': id === 'actueel' ? '#00007a' : '#000000',
             'text-halo-color': '#FFFFFF',
-            'text-halo-width': 1.5
-          }
+            'text-halo-width': 1.5,
+          },
         };
-        
+
         // For uur and vandaag layers, only show labels at high zoom levels (equivalent to resolution <= 78)
         // OpenLayers resolution ~78 corresponds to zoom level ~10-11 in MapLibre
         if (id === 'uur' || id === 'vandaag') {
@@ -1032,14 +971,16 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
             'interpolate',
             ['linear'],
             ['zoom'],
-            9, 0,    // Hide text below zoom 10
-            10, 11    // Show text at full size from zoom 11+
+            9,
+            0, // Hide text below zoom 10
+            10,
+            11, // Show text at full size from zoom 11+
           ];
         }
-        
+
         map.addLayer(textLayerConfig, beforeLayerId);
       });
-      
+
       console.log('Converted all vector layers to dynamic symbol layers');
     } catch (error) {
       console.error('Failed to load triangle images:', error);
@@ -1064,16 +1005,19 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
 
   // Helper function to generate popup HTML content from feature properties
   const generatePopupContent = (properties) => {
-    let html = '<h3 class="popover-title">Info</h3><div id="popup-content" class="popover-content"><table class="table"><tbody>';
+    let html =
+      '<h3 class="popover-title">Info</h3><div id="popup-content" class="popover-content"><table class="table"><tbody>';
     html += '<tr><td>IM nummer</td><td>' + (properties.meldnr || '') + '</td></tr>';
     html += '<tr><td>Locatie</td><td>' + (properties.bps || '') + '</td></tr>';
     html += '<tr><td>Tijdstip</td><td>' + (properties.tijdstip || '') + '</td></tr>';
-    
+
     // Handle type replacements like in original code
     let incidentType = properties.incident_type || '';
-    incidentType = incidentType.replace('Pech', 'Pechverplaatsing').replace('Onbeheerd', 'Onbeheerd voertuig');
+    incidentType = incidentType
+      .replace('Pech', 'Pechverplaatsing')
+      .replace('Onbeheerd', 'Onbeheerd voertuig');
     html += '<tr><td>Type</td><td>' + incidentType + '</td></tr>';
-    
+
     html += '<tr><td>Berger</td><td>' + (properties.berger || '') + '</td></tr>';
     html += '<tr><td>Melder</td><td>' + (properties.melder || '') + '</td></tr>';
     html += '<tr><td>ETA</td><td>' + (properties.aankomst || '') + '</td></tr>';
@@ -1092,7 +1036,7 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
     // Query rendered features at the click point
     const features = map.queryRenderedFeatures(e.point, {
       // Only query vector layers that contain incident data
-      layers: ['actueel-layer', 'uur-layer', 'vandaag-layer']
+      layers: ['actueel-layer', 'uur-layer', 'vandaag-layer'],
     });
 
     if (features.length > 0) {
@@ -1115,7 +1059,7 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
         closeButton: true,
         closeOnClick: false,
         maxWidth: '276px',
-        className: 'popover'
+        className: 'popover',
       })
         .setLngLat(coordinates)
         .setHTML(popupContent)
@@ -1141,17 +1085,19 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
   };
   setBeepImg();
 
-  document.getElementById('beep-button').addEventListener('click', function(evt) {
+  document.getElementById('beep-button').addEventListener('click', function (evt) {
     allowBeep = !allowBeep;
     setBeepImg();
   });
-  const beep = function() {
-    const sound = new Audio("data:audio/wav;base64,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qJrx4KOQjahZxWbcZgztj2c49nKmkId44S71j0c8eV9yDK6uPRzx5X18eDvjvQ6yKo9ZSS6l//8elePK/Lf//IInrOF/FvDoADYAGBMGb7FtErm5MXMlmPAJQVgWta7Zx2go+8xJ0UiCb8LHHdftWyLJE0QIAIsI+UbXu67dZMjmgDGCGl1H+vpF4NSDckSIkk7Vd+sxEhBQMRU8j/12UIRhzSaUdQ+rQU5kGeFxm+hb1oh6pWWmv3uvmReDl0UnvtapVaIzo1jZbf/pD6ElLqSX+rUmOQNpJFa/r+sa4e/pBlAABoAAAAA3CUgShLdGIxsY7AUABPRrgCABdDuQ5GC7DqPQCgbbJUAoRSUj+NIEig0YfyWUho1VBBBA//uQZB4ABZx5zfMakeAAAAmwAAAAF5F3P0w9GtAAACfAAAAAwLhMDmAYWMgVEG1U0FIGCBgXBXAtfMH10000EEEEEECUBYln03TTTdNBDZopopYvrTTdNa325mImNg3TTPV9q3pmY0xoO6bv3r00y+IDGid/9aaaZTGMuj9mpu9Mpio1dXrr5HERTZSmqU36A3CumzN/9Robv/Xx4v9ijkSRSNLQhAWumap82WRSBUqXStV/YcS+XVLnSS+WLDroqArFkMEsAS+eWmrUzrO0oEmE40RlMZ5+ODIkAyKAGUwZ3mVKmcamcJnMW26MRPgUw6j+LkhyHGVGYjSUUKNpuJUQoOIAyDvEyG8S5yfK6dhZc0Tx1KI/gviKL6qvvFs1+bWtaz58uUNnryq6kt5RzOCkPWlVqVX2a/EEBUdU1KrXLf40GoiiFXK///qpoiDXrOgqDR38JB0bw7SoL+ZB9o1RCkQjQ2CBYZKd/+VJxZRRZlqSkKiws0WFxUyCwsKiMy7hUVFhIaCrNQsKkTIsLivwKKigsj8XYlwt/WKi2N4d//uQRCSAAjURNIHpMZBGYiaQPSYyAAABLAAAAAAAACWAAAAApUF/Mg+0aohSIRobBAsMlO//Kk4soosy1JSFRYWaLC4qZBYWFRGZdwqKiwkNBVmoWFSJkWFxX4FFRQWR+LsS4W/rFRb/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////VEFHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU291bmRib3kuZGUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMjAwNGh0dHA6Ly93d3cuc291bmRib3kuZGUAAAAAAAAAACU=");
+  const beep = function () {
+    const sound = new Audio(
+      'data:audio/wav;base64,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qJrx4KOQjahZxWbcZgztj2c49nKmkId44S71j0c8eV9yDK6uPRzx5X18eDvjvQ6yKo9ZSS6l//8elePK/Lf//IInrOF/FvDoADYAGBMGb7FtErm5MXMlmPAJQVgWta7Zx2go+8xJ0UiCb8LHHdftWyLJE0QIAIsI+UbXu67dZMjmgDGCGl1H+vpF4NSDckSIkk7Vd+sxEhBQMRU8j/12UIRhzSaUdQ+rQU5kGeFxm+hb1oh6pWWmv3uvmReDl0UnvtapVaIzo1jZbf/pD6ElLqSX+rUmOQNpJFa/r+sa4e/pBlAABoAAAAA3CUgShLdGIxsY7AUABPRrgCABdDuQ5GC7DqPQCgbbJUAoRSUj+NIEig0YfyWUho1VBBBA//uQZB4ABZx5zfMakeAAAAmwAAAAF5F3P0w9GtAAACfAAAAAwLhMDmAYWMgVEG1U0FIGCBgXBXAtfMH10000EEEEEECUBYln03TTTdNBDZopopYvrTTdNa325mImNg3TTPV9q3pmY0xoO6bv3r00y+IDGid/9aaaZTGMuj9mpu9Mpio1dXrr5HERTZSmqU36A3CumzN/9Robv/Xx4v9ijkSRSNLQhAWumap82WRSBUqXStV/YcS+XVLnSS+WLDroqArFkMEsAS+eWmrUzrO0oEmE40RlMZ5+ODIkAyKAGUwZ3mVKmcamcJnMW26MRPgUw6j+LkhyHGVGYjSUUKNpuJUQoOIAyDvEyG8S5yfK6dhZc0Tx1KI/gviKL6qvvFs1+bWtaz58uUNnryq6kt5RzOCkPWlVqVX2a/EEBUdU1KrXLf40GoiiFXK///qpoiDXrOgqDR38JB0bw7SoL+ZB9o1RCkQjQ2CBYZKd/+VJxZRRZlqSkKiws0WFxUyCwsKiMy7hUVFhIaCrNQsKkTIsLivwKKigsj8XYlwt/WKi2N4d//uQRCSAAjURNIHpMZBGYiaQPSYyAAABLAAAAAAAACWAAAAApUF/Mg+0aohSIRobBAsMlO//Kk4soosy1JSFRYWaLC4qZBYWFRGZdwqKiwkNBVmoWFSJkWFxX4FFRQWR+LsS4W/rFRb/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////VEFHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU291bmRib3kuZGUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMjAwNGh0dHA6Ly93d3cuc291bmRib3kuZGUAAAAAAAAAACU='
+    );
     // Handle autoplay policy - browsers require user interaction before playing audio
     const playPromise = sound.play();
-    
+
     if (playPromise !== undefined) {
-      playPromise.catch(function(error) {
+      playPromise.catch(function (error) {
         // Audio playback failed due to autoplay policy
         console.log('Audio playback prevented by browser autoplay policy:', error.name);
         // You could show a visual notification instead, or do nothing
@@ -1169,7 +1115,7 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
     return `${hours}:${minutes}`;
   };
 
-  const setDateTime = function() {
+  const setDateTime = function () {
     const dateElement = document.getElementById('date');
     const hourElement = document.getElementById('hour');
     const date = new Date();
@@ -1184,10 +1130,10 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
   // MapLibre feature reloading
   const reloadFeatures = async () => {
     setDateTime();
-    
+
     const loadPromises = [];
     const layerKeys = ['actueel', 'uur', 'vandaag'];
-    
+
     for (const layerKey of layerKeys) {
       // Check if layer is visible in MapLibre
       const layer = map.getLayer(layerKey + '-layer');
@@ -1195,39 +1141,46 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
         loadPromises.push(loadGeoJSON(layerKey));
       }
     }
-    
+
     // Wait for all layers to load
     await Promise.all(loadPromises);
   };
 
   // melders filter
   const melder_filter = document.getElementById('filter-melder');
-  const melders = [{
-    id: '0',
-    title: 'Politiemeldkamer',
-    items: ['Politiemeldkamer', 'KLPD']
-  }, {
-    id: '1',
-    title: 'Verkeerscentrale',
-    items: ['Verkeerscentrale']
-  }, {
-    id: '2',
-    title: 'ANWB',
-    items: ['ANWB']
-  }, {
-    id: '3',
-    title: 'Alarmcentrale',
-    items: ['SOS International', 'Allianz Global Assistance', 'Eurocross', 'VHD']
-  }, {
-    id: '5', 
-    title: 'Elektr. Detectie Ongevallen', 
-    items: ['EDO'] 
-  }, {
-    id: '4',
-    title: 'Onbekend',
-    items: ['Overig', 'Wegbeheerder']
-  }];
-  
+  const melders = [
+    {
+      id: '0',
+      title: 'Politiemeldkamer',
+      items: ['Politiemeldkamer', 'KLPD'],
+    },
+    {
+      id: '1',
+      title: 'Verkeerscentrale',
+      items: ['Verkeerscentrale'],
+    },
+    {
+      id: '2',
+      title: 'ANWB',
+      items: ['ANWB'],
+    },
+    {
+      id: '3',
+      title: 'Alarmcentrale',
+      items: ['SOS International', 'Allianz Global Assistance', 'Eurocross', 'VHD'],
+    },
+    {
+      id: '5',
+      title: 'Elektr. Detectie Ongevallen',
+      items: ['EDO'],
+    },
+    {
+      id: '4',
+      title: 'Onbekend',
+      items: ['Overig', 'Wegbeheerder'],
+    },
+  ];
+
   // Initialize selectedMelders based on selectedMeldersCat and melders configuration
   for (let m = 0, mm = melders.length; m < mm; ++m) {
     const isSelected = selectedMeldersCat[melders[m].id];
@@ -1235,9 +1188,9 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
       selectedMelders[melders[m].items[itemI].toLowerCase()] = isSelected;
     }
   }
-  
+
   let m, mm;
-  const handleMelderFilter = function(evt) {
+  const handleMelderFilter = function (evt) {
     for (m = 0, mm = melders.length; m < mm; ++m) {
       if (melders[m].id === evt.target.value) {
         selectedMeldersCat[evt.target.value] = evt.target.checked;
@@ -1248,74 +1201,103 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
       }
     }
     filterMelder = true;
-    
+
     // Apply filters to cached data instead of refetching
-    Object.keys(layerConfig).forEach(layerKey => {
+    Object.keys(layerConfig).forEach((layerKey) => {
       if (layerConfig[layerKey].type === 'vector') {
         applyFiltersToLayer(layerKey);
       }
     });
-    
+
     // Save filter state to cookie
     saveToCookie();
   };
   for (m = 0, mm = melders.length; m < mm; ++m) {
     const checked = selectedMeldersCat[melders[m].id] ? ' checked' : '';
-    melder_filter.insertAdjacentHTML('beforeend', '<div class="pretty"><input id="melder_' + melders[m].id + '" type="checkbox" value="' + melders[m].id +  '"' + checked + '/><label><i class="mi mi-check"></i>' + melders[m].title + '</label></div><br/>');
-    document.getElementById('melder_' + melders[m].id).addEventListener('change', handleMelderFilter);
+    melder_filter.insertAdjacentHTML(
+      'beforeend',
+      '<div class="pretty"><input id="melder_' +
+        melders[m].id +
+        '" type="checkbox" value="' +
+        melders[m].id +
+        '"' +
+        checked +
+        '/><label><i class="mi mi-check"></i>' +
+        melders[m].title +
+        '</label></div><br/>'
+    );
+    document
+      .getElementById('melder_' + melders[m].id)
+      .addEventListener('change', handleMelderFilter);
   }
 
-  const setMelderFilter = function() {
+  const setMelderFilter = function () {
     for (let i = 0, ii = melders.length; i < ii; ++i) {
       const checked = selectedMeldersCat[melders[i].id];
       const melderElement = document.getElementById('melder_' + melders[i].id);
       melderElement.checked = checked;
       if (!checked) {
-        handleMelderFilter({target: melderElement});
+        handleMelderFilter({ target: melderElement });
       }
     }
   };
   setMelderFilter();
 
-  const handleTypeFilter = function(evt) {
+  const handleTypeFilter = function (evt) {
     selectedTypes[evt.target.value] = evt.target.checked;
     filterType = true;
-    
+
     // Apply filters to cached data instead of refetching
-    Object.keys(layerConfig).forEach(layerKey => {
+    Object.keys(layerConfig).forEach((layerKey) => {
       if (layerConfig[layerKey].type === 'vector') {
         applyFiltersToLayer(layerKey);
       }
     });
-    
+
     // Save filter state to cookie
     saveToCookie();
-  }
+  };
 
   const typeContainer = document.getElementById('filter-type');
-  const typeOptions = [{
-    id: '0',
-    title: 'Ongeval'
-  }, {
-    id: '1',
-    title: 'Pech en overig'
-  }];
+  const typeOptions = [
+    {
+      id: '0',
+      title: 'Ongeval',
+    },
+    {
+      id: '1',
+      title: 'Pech en overig',
+    },
+  ];
 
   let t, tt;
 
   for (t = 0, tt = typeOptions.length; t < tt; ++t) {
     const checked = selectedTypes[typeOptions[t].id] ? ' checked' : '';
-    typeContainer.insertAdjacentHTML('beforeend', '<div class="pretty"><input id="type_' + typeOptions[t].id + '" type="checkbox" value="' + typeOptions[t].id +  '"' + checked + '/><label><i class="mi mi-check"></i>' + typeOptions[t].title + '</label></div><br/>');
-    document.getElementById('type_' + typeOptions[t].id).addEventListener('change', handleTypeFilter);
+    typeContainer.insertAdjacentHTML(
+      'beforeend',
+      '<div class="pretty"><input id="type_' +
+        typeOptions[t].id +
+        '" type="checkbox" value="' +
+        typeOptions[t].id +
+        '"' +
+        checked +
+        '/><label><i class="mi mi-check"></i>' +
+        typeOptions[t].title +
+        '</label></div><br/>'
+    );
+    document
+      .getElementById('type_' + typeOptions[t].id)
+      .addEventListener('change', handleTypeFilter);
   }
 
-  const setTypeFilter = function() {
+  const setTypeFilter = function () {
     for (t = 0, tt = typeOptions.length; t < tt; ++t) {
       const checked = selectedTypes[typeOptions[t].id];
       const typeElement = document.getElementById('type_' + typeOptions[t].id);
       typeElement.checked = checked;
       if (!checked) {
-        handleTypeFilter({target: typeElement});
+        handleTypeFilter({ target: typeElement });
       }
     }
   };
@@ -1334,13 +1316,13 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
   */
 
   // Placeholder for MapLibre layer management
-  const findLayerById = function(id) {
+  const findLayerById = function (id) {
     // TODO: Implement with MapLibre getLayer() or style management
     return null;
   };
 
-  const applyLayerVisbility = function() {
-    const inputs = document.querySelectorAll("#layer-body input");
+  const applyLayerVisbility = function () {
+    const inputs = document.querySelectorAll('#layer-body input');
     for (let i = 0; i < inputs.length; i++) {
       const input = inputs[i];
       const id = input.id;
@@ -1358,7 +1340,7 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
         try {
           if (map && typeof map.getLayer === 'function' && map.getLayer(mapLayerId)) {
             map.setLayoutProperty(mapLayerId, 'visibility', visible ? 'visible' : 'none');
-            
+
             // Also update text layer visibility for vector layers
             if (textLayerId && map.getLayer(textLayerId)) {
               map.setLayoutProperty(textLayerId, 'visibility', visible ? 'visible' : 'none');
@@ -1376,92 +1358,94 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
 
   // Create checkboxes for each layer using the unified layerConfig
   // Sort by order property to maintain consistent UI layout
-  const sortedLayerKeys = Object.keys(layerConfig).sort((a, b) => layerConfig[a].order - layerConfig[b].order);
-  
-  sortedLayerKeys.forEach(layerId => {
+  const sortedLayerKeys = Object.keys(layerConfig).sort(
+    (a, b) => layerConfig[a].order - layerConfig[b].order
+  );
+
+  sortedLayerKeys.forEach((layerId) => {
     const layerDef = layerConfig[layerId];
     const checked = layerInfo[layerId] ? ' checked' : '';
     const checkboxHtml = `<div class="pretty"><input id="vis_${layerId}" type="checkbox" value=""${checked}/><label><i class="mi mi-check"></i>${layerDef.title}</label></div><br/>`;
     layerBody.insertAdjacentHTML('beforeend', checkboxHtml);
 
     // Add event listener for checkbox changes
-    document.getElementById('vis_' + layerId).addEventListener('change', function(evt) {
+    document.getElementById('vis_' + layerId).addEventListener('change', function (evt) {
       const visible = evt.target.checked;
-      
+
       // Update layerInfo object
       layerInfo[layerId] = visible;
-      
+
       // Get MapLibre layer id (vector layers have '-layer' suffix)
       const mapLayerId = layerDef.type === 'vector' ? layerId + '-layer' : layerId;
-      
+
       // Update MapLibre layer visibility
       if (map && map.getLayer(mapLayerId)) {
         map.setLayoutProperty(mapLayerId, 'visibility', visible ? 'visible' : 'none');
-        
+
         // Also update text layer visibility for vector layers
         const textLayerId = layerDef.type === 'vector' ? layerId + '-labels' : null;
         if (textLayerId && map.getLayer(textLayerId)) {
           map.setLayoutProperty(textLayerId, 'visibility', visible ? 'visible' : 'none');
         }
-        
+
         // Load data for vector layers when made visible
         if (layerDef.type === 'vector' && visible) {
           loadGeoJSON(layerId);
         }
       }
-      
+
       // Save layer visibility to cookies
       saveToCookie();
     });
   });
 
-  const onChangeCirkel = function(evt) {
+  const onChangeCirkel = function (evt) {
     cirkel = evt.target.checked;
-    
+
     // Store preference in cookie using the existing function
     saveToCookie();
-    
+
     console.log('Circle preference changed to:', cirkel);
-    
+
     // Update map layers with new styling
     if (map) {
       // Define the dynamic icon expression for actueel layer (priority-based colors)
       const actueleIconExpression = [
         'case',
         // If cirkel is enabled AND incident_type is not 'Ongeval', use circles
-        ['all', 
-          ['literal', cirkel], 
-          ['!=', ['get', 'incident_type'], 'Ongeval']
-        ],
+        ['all', ['literal', cirkel], ['!=', ['get', 'incident_type'], 'Ongeval']],
         [
           'case',
-          ['==', ['get', 'nummer'], 'een'], 'circle-red',
-          ['==', ['get', 'nummer'], 'twee'], 'circle-orange', 
-          ['in', ['get', 'nummer'], ['literal', ['drie', 'vier', 'vijf']]], 'circle-yellow',
-          'circle-gray' // default circle
+          ['==', ['get', 'nummer'], 'een'],
+          'circle-red',
+          ['==', ['get', 'nummer'], 'twee'],
+          'circle-orange',
+          ['in', ['get', 'nummer'], ['literal', ['drie', 'vier', 'vijf']]],
+          'circle-yellow',
+          'circle-gray', // default circle
         ],
         // Otherwise use triangles
         [
           'case',
-          ['==', ['get', 'nummer'], 'een'], 'triangle-red',
-          ['==', ['get', 'nummer'], 'twee'], 'triangle-orange',
-          ['in', ['get', 'nummer'], ['literal', ['drie', 'vier', 'vijf']]], 'triangle-yellow',
-          'triangle-gray' // default triangle
-        ]
+          ['==', ['get', 'nummer'], 'een'],
+          'triangle-red',
+          ['==', ['get', 'nummer'], 'twee'],
+          'triangle-orange',
+          ['in', ['get', 'nummer'], ['literal', ['drie', 'vier', 'vijf']]],
+          'triangle-yellow',
+          'triangle-gray', // default triangle
+        ],
       ];
-      
+
       // Define the icon expression for uur and vandaag layers (light gray only)
       const uureVandaagIconExpression = [
         'case',
         // If cirkel is enabled AND incident_type is not 'Ongeval', use circles
-        ['all', 
-          ['literal', cirkel], 
-          ['!=', ['get', 'incident_type'], 'Ongeval']
-        ],
+        ['all', ['literal', cirkel], ['!=', ['get', 'incident_type'], 'Ongeval']],
         'circle-lightgray', // Light gray circle
-        'triangle-lightgray' // Light gray triangle
+        'triangle-lightgray', // Light gray triangle
       ];
-      
+
       // Update actueel layer
       try {
         if (map.getLayer && map.getLayer('actueel-layer')) {
@@ -1471,9 +1455,9 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
       } catch (error) {
         console.error('Error updating actueel-layer:', error);
       }
-      
+
       // Update uur and vandaag layers
-      ['uur-layer', 'vandaag-layer'].forEach(layerName => {
+      ['uur-layer', 'vandaag-layer'].forEach((layerName) => {
         try {
           if (map.getLayer && map.getLayer(layerName)) {
             console.log(`Updating ${layerName} with new circle preference`);
@@ -1486,7 +1470,7 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
         }
       });
     }
-  }
+  };
 
   document.getElementById('cirkel').addEventListener('change', onChangeCirkel);
 
@@ -1495,7 +1479,7 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
   const mapEl = document.getElementById('map');
   const centerPanelEl = document.getElementById('centerpanel');
   let expanded = true;
-  buttonEl.addEventListener('click', function() {
+  buttonEl.addEventListener('click', function () {
     if (expanded) {
       mapEl.style.width = 'calc(100% - 15px)';
       centerPanelEl.style.right = '0px';
