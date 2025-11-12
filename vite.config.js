@@ -1,9 +1,13 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
 import compression from 'vite-plugin-compression'
 
-export default defineConfig({
-  base: process.env.VITE_BASE_PATH || '/', // Set base path for deployment
+export default defineConfig(({ mode }) => {
+  // Load environment variables from src/.env files
+  const env = loadEnv(mode, 'src', '')
+  
+  return {
+  base: env.VITE_BASE_PATH || '/', // Set base path for deployment
   root: 'src', // Set src as the root directory
   publicDir: '../public', // Public assets directory
   build: {
@@ -38,4 +42,5 @@ export default defineConfig({
       ext: '.br'
     })
   ]
+  }
 })
