@@ -1,6 +1,7 @@
 // Import CSS dependencies
 import 'choices.js/public/assets/styles/choices.min.css';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import '../styles/app.css';
 
 // Import dependencies
 import Cookies from 'js-cookie';
