@@ -73,7 +73,8 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
   };
 
   const getBaseUrl = (path) => {
-    const baseHost = import.meta.env.VITE_BASE_HOST || window.location.origin;
+    // Always use window.location.origin to ensure same-origin requests
+    const baseHost = window.location.origin;
     const basePath = import.meta.env.VITE_BASE_PATH || '/';
 
     const cleanPath = path.replace(/^\//, '');
