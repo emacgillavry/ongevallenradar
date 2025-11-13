@@ -72,6 +72,16 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
     return cleanBasePath + cleanPath;
   };
 
+  const getBaseUrl = (path) => {
+    const baseHost = import.meta.env.VITE_BASE_HOST || window.location.origin;
+    const basePath = import.meta.env.VITE_BASE_PATH || '/';
+
+    const cleanPath = path.replace(/^\//, '');
+    const cleanBasePath = basePath.endsWith('/') ? basePath : basePath + '/';
+
+    return `${baseHost}${cleanBasePath}${cleanPath}`;
+  };
+
   // GeoServer configuration (must be defined before layerConfig)
   const geoserverHost = import.meta.env.VITE_WFS_HOST || 'https://geoserver.stichtingimn.nl';
   const geoserverPath = import.meta.env.VITE_WFS_PATH || '/geoserver/ows';
@@ -755,8 +765,8 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
     container: 'map',
     style: {
       version: 8,
-      sprite: `${window.location.origin}/sprite`, // Absolute URL required by MapLibre
-      glyphs: `${window.location.origin}/fonts/{fontstack}/{range}.pbf`, // Local font glyphs for text rendering
+      sprite: getBaseUrl('sprite'), // Absolute URL required by MapLibre
+      glyphs: getBaseUrl('fonts/{fontstack}/{range}.pbf'), // Local font glyphs for text rendering
       sources: generateSources(),
       layers: [
         {
