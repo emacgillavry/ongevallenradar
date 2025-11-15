@@ -235,21 +235,18 @@ button {
 }
 
 /* Pretty checkbox styles extracted from pretty-checkbox module */
-.pretty {
+label.pretty {
   line-height: 1;
   position: relative;
   display: inline-block;
   margin: 0 10px 5px 0;
-}
-
-.pretty label {
   font-weight: normal;
 }
 
-.pretty > input[type='checkbox'],
-.pretty > input[type='radio'] {
+label.pretty > input[type='checkbox'],
+label.pretty > input[type='radio'] {
   position: absolute;
-  z-index: 1;
+  z-index: 10;
   top: 0;
   left: 0;
   display: block;
@@ -260,7 +257,7 @@ button {
   opacity: 0;
 }
 
-.pretty i {
+label.pretty i {
   font-size: 1em !important;
   position: relative;
   display: inline-block;
@@ -271,9 +268,9 @@ button {
   text-align: center;
 }
 
-.pretty i:before {
+label.pretty i:before {
   position: relative;
-  z-index: 999;
+  z-index: 1;
   left: 0;
   display: inline-block;
   vertical-align: bottom;
@@ -281,7 +278,7 @@ button {
   background-color: #fff;
 }
 
-.pretty i:after {
+label.pretty i:after {
   position: absolute;
   top: 0;
   left: 0;
@@ -293,20 +290,20 @@ button {
   border-radius: 0;
 }
 
-.pretty > input[type='checkbox']:checked + label > i:before,
-.pretty > input[type='radio']:checked + label > i:before {
+label.pretty > input[type='checkbox']:checked + i:before,
+label.pretty > input[type='radio']:checked + i:before {
   color: inherit;
   background-color: #fff;
 }
 
-.pretty > input[type='checkbox'][disabled],
-.pretty > input[type='radio'][disabled] {
+label.pretty > input[type='checkbox'][disabled],
+label.pretty > input[type='radio'][disabled] {
   cursor: not-allowed;
   opacity: 0;
 }
 
-.pretty > input[type='checkbox'][disabled] + label,
-.pretty > input[type='radio'][disabled] + label {
+label.pretty[disabled],
+label.pretty:has(input[disabled]) {
   cursor: not-allowed;
   opacity: 0.5;
 }

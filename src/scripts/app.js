@@ -1227,15 +1227,15 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
     const checked = selectedMeldersCat[melders[m].id] ? ' checked' : '';
     melder_filter.insertAdjacentHTML(
       'beforeend',
-      '<div class="pretty"><input id="melder_' +
+      '<label class="pretty"><input id="melder_' +
         melders[m].id +
         '" type="checkbox" value="' +
         melders[m].id +
         '"' +
         checked +
-        '/><label><i class="mi mi-check"></i>' +
+        '/><i class="mi mi-check"></i>' +
         melders[m].title +
-        '</label></div><br/>'
+        '</label><br/>'
     );
     document
       .getElementById('melder_' + melders[m].id)
@@ -1287,15 +1287,15 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
     const checked = selectedTypes[typeOptions[t].id] ? ' checked' : '';
     typeContainer.insertAdjacentHTML(
       'beforeend',
-      '<div class="pretty"><input id="type_' +
+      '<label class="pretty"><input id="type_' +
         typeOptions[t].id +
         '" type="checkbox" value="' +
         typeOptions[t].id +
         '"' +
         checked +
-        '/><label><i class="mi mi-check"></i>' +
+        '/><i class="mi mi-check"></i>' +
         typeOptions[t].title +
-        '</label></div><br/>'
+        '</label><br/>'
     );
     document
       .getElementById('type_' + typeOptions[t].id)
@@ -1376,7 +1376,7 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
   sortedLayerKeys.forEach((layerId) => {
     const layerDef = layerConfig[layerId];
     const checked = layerInfo[layerId] ? ' checked' : '';
-    const checkboxHtml = `<div class="pretty"><input id="vis_${layerId}" type="checkbox" value=""${checked}/><label><i class="mi mi-check"></i>${layerDef.title}</label></div><br/>`;
+    const checkboxHtml = `<label class="pretty"><input id="vis_${layerId}" type="checkbox" value=""${checked}/><i class="mi mi-check"></i>${layerDef.title}</label><br/>`;
     layerBody.insertAdjacentHTML('beforeend', checkboxHtml);
 
     // Add event listener for checkbox changes
