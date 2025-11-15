@@ -387,9 +387,6 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
     'ZH163a',
   ];
 
-  // Placeholder for MapLibre GL JS styles (to be implemented)
-  const imageStyles = {};
-
   // Track existing features for beeping functionality
   const existingFeatures = {
     actueel: new Set(),
@@ -470,9 +467,6 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
     }
   };
 
-  // Placeholder for compatibility
-  const sources = {};
-
   // Cache for raw (unfiltered) GeoJSON data
   const rawDataCache = {
     actueel: null,
@@ -547,9 +541,6 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
 
     return true;
   };
-
-  // Placeholder for MapLibre layers
-  const layers = {};
 
   // Initialize Choices.js with rayons as choices
   const selectElement = document.getElementById('sel-rayon');
@@ -1324,24 +1315,6 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
   };
   setTypeFilter();
 
-  // TODO: Convert OpenLayers layer management to MapLibre style layer management
-  /*
-  const findLayerById = function(id) {
-    const layersArray = map.getLayers().getArray()
-    for (let i = 0, ii = layersArray.length; i < ii; ++i) {
-      if (layersArray[i].get('id') === id) {
-        return layersArray[i];
-      }
-    }
-  };
-  */
-
-  // Placeholder for MapLibre layer management
-  const findLayerById = function (id) {
-    // TODO: Implement with MapLibre getLayer() or style management
-    return null;
-  };
-
   const applyLayerVisbility = function () {
     const inputs = document.querySelectorAll('#layer-body input');
     for (let i = 0; i < inputs.length; i++) {
@@ -1426,8 +1399,6 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
     // Store preference in cookie using the existing function
     saveToCookie();
 
-    console.log('Circle preference changed to:', cirkel);
-
     // Update map layers with new styling
     if (map) {
       // Define the dynamic icon expression for actueel layer (priority-based colors)
@@ -1481,10 +1452,7 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
       ['uur-layer', 'vandaag-layer'].forEach((layerName) => {
         try {
           if (map.getLayer && map.getLayer(layerName)) {
-            console.log(`Updating ${layerName} with new circle preference`);
             map.setLayoutProperty(layerName, 'icon-image', uureVandaagIconExpression);
-          } else {
-            console.log(`Layer ${layerName} not found or map not ready`);
           }
         } catch (error) {
           console.error(`Error updating layer ${layerName}:`, error);
