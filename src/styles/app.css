@@ -1,13 +1,9 @@
 * {
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
   box-sizing: border-box;
 }
 
 :after,
 :before {
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
   box-sizing: border-box;
 }
 
@@ -57,42 +53,33 @@ button {
 }
 #backtomain {
   position: absolute;
-  bottom: 0px;
+  bottom: 0;
   width: 100%;
 }
 .flexcontainer {
   justify-content: space-between;
-  display: -webkit-flex;
   display: flex;
-  -webkit-flex-direction: column;
   flex-direction: column;
 }
 #filter-melder,
-#filter-type {
-  margin: 30px 0px 25px 30px;
-}
+#filter-type,
 #cirkel-pech {
-  margin: 30px 0px 25px 30px;
+  margin: 30px 0 25px 30px;
 }
-#save-settings {
-  margin: 30px 0px 0px 30px;
-}
+#save-settings,
 #clear-settings {
-  margin: 30px 0px 0px 30px;
+  margin: 30px 0 0 30px;
 }
 .title {
-  margin: 15px 0px 0px 30px;
-  background-color: white;
-  height: 80px;
-  background-image: url(../assets/images/logo.svg);
+  margin: 15px 0 0 30px;
+  background: white url(../assets/images/logo.svg) no-repeat left;
   background-size: 275px 72px;
-  background-repeat: no-repeat;
-  background-position: left;
+  height: 80px;
 }
 #layers {
   background-color: white;
-  padding: 0px 0px 0px 35px;
-  margin: -10px 0px -10px 0px;
+  padding: 0 0 0 35px;
+  margin: -10px 0 -10px 0;
   overflow: auto;
 }
 #filter {
@@ -101,11 +88,11 @@ button {
 }
 #beep {
   background-color: white;
-  padding: 0px 0px 0px 35px;
-  margin: -10px 0px -10px 0px;
+  padding: 0 0 0 35px;
+  margin: -10px 0 -10px 0;
 }
 #settings {
-  margin: 30px 0px 15px 30px;
+  margin: 30px 0 15px 30px;
   height: 50px;
 }
 #beep-button {
@@ -119,17 +106,15 @@ button {
   color: #077395;
   height: 100px;
   background-color: white;
-  margin: 0px 0px 0px 40px;
+  margin: 0 0 0 40px;
   justify-content: space-between;
-  display: -webkit-flex;
   display: flex;
-  -webkit-flex-direction: row;
   flex-direction: row;
 }
 .legendimg {
   padding: 2px;
   width: 28px;
-  border: 0;
+  border: none;
   vertical-align: middle;
 }
 .legendtext {
@@ -147,7 +132,7 @@ button {
 }
 #date {
   font-size: 20px;
-  margin: -10px 0px 0px 0px;
+  margin: -10px 0 0 0;
 }
 .between {
   border: 1px solid #d3e6ec;
@@ -159,32 +144,31 @@ button {
 #map {
   min-height: 735px;
   position: absolute;
-  top: 0px;
-  left: 0px;
+  top: 0;
+  left: 0;
   background-color: white;
   width: calc(100% - 340px);
   height: 100%;
 }
-#ms-sel-rayon li {
-  color: #077395;
-}
-#centerpanel {
+
+#centerpanel,
+#eastpanel {
   min-height: 735px;
   height: 100%;
+  position: absolute;
+  top: 0;
+}
+
+#centerpanel {
   width: 15px;
   background-color: #d3e6ec;
   right: 325px;
-  position: absolute;
-  top: 0px;
 }
+
 #eastpanel {
-  min-height: 735px;
   background-color: white;
   width: 325px;
-  height: 100%;
-  position: absolute;
-  right: 0px;
-  top: 0px;
+  right: 0;
   overflow: auto;
 }
 #options,
@@ -210,7 +194,7 @@ button {
   width: 15px;
   height: 15px;
   position: absolute;
-  top: 0px;
+  top: 0;
 }
 .collapsed {
   background-image: url(../assets/images/collapse.svg);
@@ -284,10 +268,9 @@ label.pretty i:after {
   left: 0;
   width: 100%;
   height: 100%;
-  content: '\0000';
+  content: '';
   color: transparent;
   border: 1px solid #b9b9b9;
-  border-radius: 0;
 }
 
 label.pretty > input[type='checkbox']:checked + i:before,
