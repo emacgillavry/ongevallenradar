@@ -776,6 +776,9 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
           source: 'osm',
           minZoom: 7,
           maxZoom: 17,
+          paint: {
+            'raster-fade-duration': 0,
+          },
         },
         // Generate only raster layers from layerConfig
         // Vector layers will be added properly after sprite loading
@@ -793,10 +796,17 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
               layout: {
                 visibility: layerInfo[layerId] ? 'visible' : 'none',
               },
+              paint: {
+                'raster-fade-duration': 0,
+              },
             };
           }),
       ],
     },
+    // In production we disable style validation to avoid strict validation errors
+    // during deploys where sprite/glyph URLs might be rewritten. Use Vite's
+    // import.meta.env.PROD flag to detect production mode.
+    validateStyle: import.meta.env.PROD ? false : true,
     center: [5.12, 52.37], // Netherlands center in WGS84
     zoom: 8,
     maxZoom: 17,
