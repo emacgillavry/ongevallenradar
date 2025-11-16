@@ -211,24 +211,17 @@ button {
   color: #d3e6ec;
 }
 
-/* Simple CSS checkmark icon to replace Material Icons */
-.mi-check::before {
-  content: '✓';
-  font-weight: bold;
-  color: #077395;
-}
-
-/* Pretty checkbox styles extracted from pretty-checkbox module */
-label.pretty {
+/* Custom checkbox styles for labels containing checkbox inputs */
+label:has(input[type='checkbox']) {
   line-height: 1;
   position: relative;
-  display: inline-block;
-  margin: 0 10px 5px 0;
+  display: block;
+  margin: 0 0 5px 0;
   font-weight: normal;
 }
 
-label.pretty > input[type='checkbox'],
-label.pretty > input[type='radio'] {
+label > input[type='checkbox'],
+label > input[type='radio'] {
   position: absolute;
   z-index: 10;
   top: 0;
@@ -241,7 +234,7 @@ label.pretty > input[type='radio'] {
   opacity: 0;
 }
 
-label.pretty i {
+label:has(input[type='checkbox']) i {
   font-size: 1em !important;
   position: relative;
   display: inline-block;
@@ -252,7 +245,7 @@ label.pretty i {
   text-align: center;
 }
 
-label.pretty i:before {
+label:has(input[type='checkbox']) i:before {
   position: relative;
   z-index: 1;
   left: 0;
@@ -260,9 +253,11 @@ label.pretty i:before {
   vertical-align: bottom;
   color: transparent;
   background-color: #fff;
+  content: '✓';
+  font-weight: bold;
 }
 
-label.pretty i:after {
+label:has(input[type='checkbox']) i:after {
   position: absolute;
   top: 0;
   left: 0;
@@ -273,20 +268,19 @@ label.pretty i:after {
   border: 1px solid #b9b9b9;
 }
 
-label.pretty > input[type='checkbox']:checked + i:before,
-label.pretty > input[type='radio']:checked + i:before {
-  color: inherit;
+label > input[type='checkbox']:checked + i:before,
+label > input[type='radio']:checked + i:before {
+  color: #077395;
   background-color: #fff;
 }
 
-label.pretty > input[type='checkbox'][disabled],
-label.pretty > input[type='radio'][disabled] {
+label > input[type='checkbox'][disabled],
+label > input[type='radio'][disabled] {
   cursor: not-allowed;
   opacity: 0;
 }
 
-label.pretty[disabled],
-label.pretty:has(input[disabled]) {
+label:has(input[disabled]) {
   cursor: not-allowed;
   opacity: 0.5;
 }

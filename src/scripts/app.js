@@ -478,15 +478,11 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
   const applyFiltersToLayer = (layerKey) => {
     const rawData = rawDataCache[layerKey];
     if (!rawData) {
-      console.log(`No cached data for ${layerKey}, skipping filter application`);
       return;
     }
 
     const filteredData = filterGeoJSON(rawData);
     map.getSource(layerKey).setData(filteredData);
-    console.log(
-      `Applied filters to ${layerKey}: ${filteredData.features.length}/${rawData.features.length} features shown`
-    );
   };
 
   // Filter GeoJSON data based on current filter settings
@@ -839,7 +835,6 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
   map.on('load', async () => {
     try {
       // Sprite is automatically loaded from /sprite.png and /sprite.json by MapLibre
-      console.log('Map loaded with sprite support');
 
       // Create all vector layers with proper sprite-based styling
       // These layers were not created in the initial style - we add them here once sprites are loaded
@@ -992,8 +987,6 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
 
         map.addLayer(textLayerConfig, beforeLayerId);
       });
-
-      console.log('Converted all vector layers to dynamic symbol layers');
     } catch (error) {
       console.error('Failed to load triangle images:', error);
     }
@@ -1111,7 +1104,6 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
     if (playPromise !== undefined) {
       playPromise.catch(function (error) {
         // Audio playback failed due to autoplay policy
-        console.log('Audio playback prevented by browser autoplay policy:', error.name);
         // You could show a visual notification instead, or do nothing
       });
     }
@@ -1228,7 +1220,7 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
     const checked = selectedMeldersCat[melders[m].id] ? ' checked' : '';
     melder_filter.insertAdjacentHTML(
       'beforeend',
-      '<label class="pretty"><input id="melder_' +
+      '<label><input id="melder_' +
         melders[m].id +
         '" type="checkbox" value="' +
         melders[m].id +
@@ -1236,7 +1228,7 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
         checked +
         '/><i class="mi mi-check"></i>' +
         melders[m].title +
-        '</label><br/>'
+        '</label>'
     );
     document
       .getElementById('melder_' + melders[m].id)
@@ -1288,7 +1280,7 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
     const checked = selectedTypes[typeOptions[t].id] ? ' checked' : '';
     typeContainer.insertAdjacentHTML(
       'beforeend',
-      '<label class="pretty"><input id="type_' +
+      '<label><input id="type_' +
         typeOptions[t].id +
         '" type="checkbox" value="' +
         typeOptions[t].id +
@@ -1296,7 +1288,7 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
         checked +
         '/><i class="mi mi-check"></i>' +
         typeOptions[t].title +
-        '</label><br/>'
+        '</label>'
     );
     document
       .getElementById('type_' + typeOptions[t].id)
@@ -1359,7 +1351,7 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
   sortedLayerKeys.forEach((layerId) => {
     const layerDef = layerConfig[layerId];
     const checked = layerInfo[layerId] ? ' checked' : '';
-    const checkboxHtml = `<label class="pretty"><input id="vis_${layerId}" type="checkbox" value=""${checked}/><i class="mi mi-check"></i>${layerDef.title}</label><br/>`;
+    const checkboxHtml = `<label><input id="vis_${layerId}" type="checkbox" value=""${checked}/><i class="mi mi-check"></i>${layerDef.title}</label>`;
     layerBody.insertAdjacentHTML('beforeend', checkboxHtml);
 
     // Add event listener for checkbox changes
