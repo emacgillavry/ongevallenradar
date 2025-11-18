@@ -813,12 +813,14 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
   });
 
   // Add zoom control to the map (zoom buttons only, no compass)
+  // Determine position based on initial screen size
+  const navPosition = window.innerWidth < 800 ? 'bottom-left' : 'top-left';
   map.addControl(
     new NavigationControl({
       showCompass: false,
       showZoom: true,
     }),
-    'top-left'
+    navPosition
   );
 
   // Add custom attribution control without MapLibre prefix (collapsible)
