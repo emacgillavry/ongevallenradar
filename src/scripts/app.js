@@ -1385,6 +1385,22 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
     });
   });
 
+  // Collapse/expand sidebar (aside) with sliding effect and resize map
+  const eastPanel = document.querySelector('aside');
+  const collapseButton = document.getElementById('collapse-button');
+  const mapContainer = document.getElementById('map');
+  collapseButton.addEventListener('click', function () {
+    eastPanel.classList.toggle('collapsed');
+    if (eastPanel.classList.contains('collapsed')) {
+      mapContainer.style.width = 'calc(100vw - 15px)';
+    } else {
+      mapContainer.style.width = 'calc(100vw - 340px)';
+    }
+    if (window.map && typeof window.map.resize === 'function') {
+      window.map.resize();
+    }
+  });
+
   const onChangeCirkel = function (evt) {
     cirkel = evt.target.checked;
 
@@ -1454,27 +1470,6 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
   };
 
   document.getElementById('cirkel').addEventListener('change', onChangeCirkel);
-
-  const collapsibleEl = document.getElementById('eastpanel');
-  const buttonEl = document.getElementById('collapse-button');
-  const mapEl = document.getElementById('map');
-  const centerPanelEl = document.getElementById('centerpanel');
-  let expanded = true;
-  buttonEl.addEventListener('click', function () {
-    if (expanded) {
-      mapEl.style.width = 'calc(100% - 15px)';
-      centerPanelEl.style.right = '0px';
-      collapsibleEl.style.display = 'none';
-    } else {
-      mapEl.style.width = 'calc(100% - 340px)';
-      centerPanelEl.style.right = '325px';
-      collapsibleEl.style.display = '';
-    }
-    buttonEl.classList.toggle('expanded');
-    buttonEl.classList.toggle('collapsed');
-    expanded = !expanded;
-    map.resize(); // MapLibre GL JS equivalent of ol.Map.updateSize()
-  });
 
   setDateTime();
   window.setInterval(reloadFeatures, 10000);

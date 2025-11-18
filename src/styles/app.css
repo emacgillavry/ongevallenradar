@@ -23,6 +23,7 @@ body {
   font-size: 14px !important;
   line-height: 1.42857143;
   color: #333;
+  overflow-x: hidden;
 }
 
 /* Choices.js customizations */
@@ -142,13 +143,13 @@ button {
   margin: 10px;
 }
 #map {
-  min-height: 735px;
   position: absolute;
   top: 0;
   left: 0;
-  background-color: white;
-  width: calc(100% - 340px);
-  height: 100%;
+  height: 100vh;
+  width: calc(100vw - 340px);
+  z-index: 1;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 #centerpanel,
@@ -162,15 +163,50 @@ button {
 #centerpanel {
   width: 15px;
   background-color: #d3e6ec;
-  right: 325px;
+  right: 340px;
 }
 
-#eastpanel {
-  background-color: white;
-  width: 325px;
+aside {
+  position: absolute;
+  top: 0;
   right: 0;
-  overflow: auto;
+  width: 340px;
+  height: 100%;
+  background: #d3e6ec;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 10;
+  padding-left: 15px;
 }
+
+aside > div {
+  background: #fff;
+}
+
+aside.collapsed {
+  transform: translateX(calc(340px - 15px));
+}
+
+aside.collapsed #collapse-button {
+  transform: rotate(180deg);
+}
+
+#collapse-button {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 15px;
+  height: 15px;
+  background-color: #d3e6ec;
+  background-image: url(../assets/images/collapse.svg);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 15px 15px;
+  border: none;
+  cursor: pointer;
+  z-index: 20;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 #options,
 #backtomain {
   padding-top: 10px;
@@ -182,30 +218,21 @@ button {
 #mainoptions {
   width: 100%;
   height: 100%;
+  background-color: #fff;
 }
 #secondaryoptions {
   display: none;
+  background-color: #fff;
+  justify-content: start;
+  height: 100%;
 }
 #filter-button {
   width: 50px;
   height: 20px;
 }
-#collapse-button {
-  width: 15px;
-  height: 15px;
-  position: absolute;
-  top: 0;
-}
-.collapsed {
-  background-image: url(../assets/images/collapse.svg);
-  background-size: 15px 15px;
-  cursor: pointer;
-}
-.expanded {
-  background-image: url(../assets/images/expand.svg);
-  background-size: 15px 15px;
-  cursor: pointer;
-}
+
+/* Remove .expanded and .collapsed image swap rules */
+/* .collapsed, .expanded { display: none; } */
 .bordertext {
   text-align: right;
   color: #d3e6ec;
@@ -287,14 +314,14 @@ label:has(input[disabled]) {
 
 /* Mobile styles for screens 800px and smaller */
 @media (max-width: 800px) {
-  #eastpanel {
+  aside {
     display: none;
   }
-  #centerpanel {
+  #collapse-button {
     display: none;
   }
   #map {
-    width: 100%;
+    width: 100vw;
   }
 }
 
