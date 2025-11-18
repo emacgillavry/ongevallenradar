@@ -9,10 +9,16 @@
     <title>Ongevallenradar</title>
   </head>
   <body>
+    <form id="searchbar">
+      <input type="text" placeholder="Zoek..." />
+      <button type="submit">Zoeken</button>
+    </form>
     <main id="map"></main>
     <aside>
       <button id="collapse-button" aria-label="Paneel verbergen"></button>
-      <h1 class="title"><a class="visually-hidden" href="https://www.stichtingimn.nl">Stichting incidentmanagement Nederland</a></h1>
+      <h1 class="title">
+        <a class="visually-hidden" href="https://www.stichtingimn.nl">Stichting incidentmanagement Nederland</a>
+      </h1>
       <div id="secondaryoptions" class="flexcontainer">
         <div class="between"></div>
         <div id="filter-melder"></div>
