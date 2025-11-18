@@ -1,6 +1,7 @@
 import { defineConfig, loadEnv } from 'vite';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 import compression from 'vite-plugin-compression';
+import { execSync } from 'child_process';
 
 export default defineConfig(({ mode }) => {
   // Load environment variables from src/.env files
@@ -23,6 +24,32 @@ export default defineConfig(({ mode }) => {
       },
     },
     plugins: [
+      // Plugin to inject build information into HTML
+      {
+        name: 'html-build-info',
+        transformIndexHtml(html) {
+          const buildTime = new Date().toLocaleString('nl-NL', { timeZone: 'Europe/Amsterdam' });
+          let gitCommit = 'unknown';
+          let gitBranch = 'unknown';
+
+          try {
+            gitCommit = execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim();
+          } catch (e) {
+            // Git not available or not a git repo
+          }
+
+          try {
+            gitBranch = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf8' }).trim();
+          } catch (e) {
+            // Git not available or not a git repo
+          }
+
+          return html
+            .replace('__BUILD_TIME__', buildTime)
+            .replace('__GIT_COMMIT__', gitCommit)
+            .replace('__GIT_BRANCH__', gitBranch);
+        },
+      },
       viteStaticCopy({
         targets: [
           {
