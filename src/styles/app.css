@@ -1,3 +1,15 @@
+/* Visually hide but keep accessible */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 * {
   box-sizing: border-box;
 }
@@ -71,11 +83,14 @@ button {
 #clear-settings {
   margin: 30px 0 0 30px;
 }
-.title {
-  margin: 15px 0 0 30px;
+h1 {
+  padding: 15px 0 0 30px;
+  margin: 0;
   background: white url(../assets/images/logo.svg) no-repeat left;
+  background-position-x: 30px;
+  background-position-y: 19px;
   background-size: 275px 72px;
-  height: 80px;
+  height: 128px;
 }
 #layers {
   background-color: white;
@@ -217,14 +232,14 @@ aside.collapsed #collapse-button {
 }
 #mainoptions {
   width: 100%;
-  height: 100%;
+  height: calc(100% - 128px);
   background-color: #fff;
 }
 #secondaryoptions {
   display: none;
   background-color: #fff;
   justify-content: start;
-  height: 100%;
+  height: calc(100% - 128px);
 }
 #filter-button {
   width: 50px;
