@@ -7,10 +7,59 @@ import '../styles/app.css';
 import Cookies from 'js-cookie';
 import Choices from 'choices.js';
 import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
+import Autocomplete from '@trevoreyre/autocomplete-js';
 // Sprite uses absolute URL (MapLibre requirement) - loads /sprite.png and /sprite.json automatically
 
 // Start the main application code
 (function () {
+  // Initialize Autocomplete.js on the search input
+  document.addEventListener('DOMContentLoaded', function () {
+    if (document.querySelector('#autocomplete')) {
+      new Autocomplete('#autocomplete', {
+        autoSelect: true,
+        search: (input) => {
+          // Use PDOK Locatieserver suggest API with env variable
+          const PDOK_API_BASE = import.meta.env.VITE_PDOK_API_BASE;
+          const url = `${PDOK_API_BASE}/suggest?rows=10&fq=type:hectometerpaal&q=${encodeURIComponent(input)}`;
+          if (input.length < 3) {
+            return Promise.resolve([]);
+          }
+          return fetch(url)
+            .then((response) => response.json())
+            .then((data) => data.response.docs);
+        },
+        getResultValue: (result) => result.weergavenaam,
+        onSubmit: (result) => {
+          if (result && result.id) {
+            const PDOK_API_BASE = import.meta.env.VITE_PDOK_API_BASE;
+            const getUrl = `${PDOK_API_BASE}/lookup?id=${result.id}`;
+            fetch(getUrl)
+              .then((response) => response.json())
+              .then((data) => {
+                const zoomlevel = {
+                  gemeente: 9,
+                  woonplaats: 9,
+                  weg: 14,
+                  postcode: 14,
+                  adres: 14,
+                };
+                const doc = data.response.docs[0];
+                const location = {
+                  center: doc.centroide_ll
+                    .slice(6, -1)
+                    .split(' ')
+                    .map((x) => parseFloat(x, 10)),
+                  zoom: zoomlevel[doc.type],
+                };
+                // TODO: Use location.center and location.zoom as needed
+                // e.g., pan/zoom the map
+                console.log('Found location:', location);
+              });
+          }
+        },
+      });
+    }
+  });
   // Cookie config
   const cookieName = 'ongevallenradar';
   let cookieInfo;

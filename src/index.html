@@ -9,8 +9,15 @@
     <title>Ongevallenradar</title>
   </head>
   <body>
-    <form id="searchbar">
-      <input type="text" placeholder="Zoek..." />
+    <form id="autocomplete">
+      <input
+        type="text"
+        placeholder="Zoek hectometerpaal"
+        aria-label="Zoek hectometerpaal"
+        autocomplete="on"
+        class="autocomplete-input"
+      />
+      <ul class="autocomplete-result-list"></ul>
       <button type="submit">Zoeken</button>
     </form>
     <main id="map"></main>

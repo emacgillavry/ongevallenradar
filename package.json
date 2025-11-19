@@ -27,6 +27,7 @@
   "author": "Edward Mac Gillavry (Webmapper)",
   "license": "BSD-2-Clause",
   "dependencies": {
+    "@trevoreyre/autocomplete-js": "^3.0.3",
     "choices.js": "^11.1.0",
     "js-cookie": "^3.0.5",
     "maplibre-gl": "^5.10.0"
