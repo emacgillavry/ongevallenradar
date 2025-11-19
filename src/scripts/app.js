@@ -337,52 +337,6 @@ const rayons = [
 
 // Start the main application code (DOM-dependent only)
 document.addEventListener('DOMContentLoaded', function () {
-  if (document.querySelector('#autocomplete')) {
-    new Autocomplete('#autocomplete', {
-      autoSelect: true,
-      search: (input) => {
-        // Use PDOK Locatieserver suggest API with env variable
-        const PDOK_API_BASE = import.meta.env.VITE_PDOK_API_BASE;
-        const url = `${PDOK_API_BASE}/suggest?rows=10&fq=type:hectometerpaal&q=${encodeURIComponent(input)}`;
-        if (input.length < 3) {
-          return Promise.resolve([]);
-        }
-        return fetch(url)
-          .then((response) => response.json())
-          .then((data) => data.response.docs);
-      },
-      getResultValue: (result) => result.weergavenaam,
-      onSubmit: (result) => {
-        if (result && result.id) {
-          const PDOK_API_BASE = import.meta.env.VITE_PDOK_API_BASE;
-          const getUrl = `${PDOK_API_BASE}/lookup?id=${result.id}`;
-          fetch(getUrl)
-            .then((response) => response.json())
-            .then((data) => {
-              const zoomlevel = {
-                gemeente: 9,
-                woonplaats: 9,
-                weg: 14,
-                postcode: 14,
-                adres: 14,
-              };
-              const doc = data.response.docs[0];
-              const location = {
-                center: doc.centroide_ll
-                  .slice(6, -1)
-                  .split(' ')
-                  .map((x) => parseFloat(x, 10)),
-                zoom: zoomlevel[doc.type],
-              };
-              // TODO: Use location.center and location.zoom as needed
-              // e.g., pan/zoom the map
-              console.log('Found location:', location);
-            });
-        }
-      },
-    });
-  }
-
   // Cookie config and state variables (DOM-dependent)
   let cookieInfo;
   const loadCookie = function () {
@@ -852,6 +806,12 @@ document.addEventListener('DOMContentLoaded', function () {
     'bottom-right'
   );
 
+  // Force map resize after DOM is loaded to fix 15px gap issue
+  // This ensures the canvas size matches the container size after CSS Grid layout is complete
+  requestAnimationFrame(() => {
+    map.resize();
+  });
+
   // Load initial data for visible layers
   map.on('load', async () => {
     try {
@@ -1024,6 +984,55 @@ document.addEventListener('DOMContentLoaded', function () {
     if (layerInfo.vandaag) {
       loadGeoJSON('vandaag');
     }
+  });
+
+  // Initialize autocomplete after map is created (so map.easeTo() works)
+  new Autocomplete('#autocomplete', {
+    autoSelect: true,
+    search: (input) => {
+      // Use PDOK Locatieserver suggest API with env variable
+      const PDOK_API_BASE = import.meta.env.VITE_PDOK_API_BASE;
+      const url = `${PDOK_API_BASE}/suggest?rows=10&fq=type:hectometerpaal&q=${encodeURIComponent(input)}`;
+      if (input.length < 3) {
+        return Promise.resolve([]);
+      }
+      return fetch(url)
+        .then((response) => response.json())
+        .then((data) => data.response.docs);
+    },
+    getResultValue: (result) => result.weergavenaam,
+    onSubmit: (result) => {
+      if (result && result.id) {
+        const PDOK_API_BASE = import.meta.env.VITE_PDOK_API_BASE;
+        const getUrl = `${PDOK_API_BASE}/lookup?id=${result.id}`;
+        fetch(getUrl)
+          .then((response) => response.json())
+          .then((data) => {
+            const zoomlevel = {
+              gemeente: 9,
+              woonplaats: 9,
+              weg: 14,
+              hectometerpaal: 18,
+              postcode: 14,
+              adres: 14,
+            };
+            const doc = data.response.docs[0];
+            const location = {
+              center: doc.centroide_ll
+                .slice(6, -1)
+                .split(' ')
+                .map((x) => parseFloat(x, 10)),
+              zoom: zoomlevel[doc.type],
+            };
+            // Use the map instance to fly to the selected location
+            map.easeTo({
+              center: location.center,
+              zoom: location.zoom,
+              duration: 10,
+            });
+          });
+      }
+    },
   });
 
   // MapLibre popup implementation
@@ -1494,4 +1503,4 @@ document.addEventListener('DOMContentLoaded', function () {
 
   setDateTime();
   window.setInterval(reloadFeatures, 10000);
-})();
+});
