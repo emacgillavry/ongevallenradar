@@ -9,13 +9,24 @@
     <title>Ongevallenradar</title>
   </head>
   <body>
-    <div id="map"></div>
-    <div id="centerpanel">
-      <div id="collapse-button" class="collapsed"></div>
+    <div id="autocomplete">
+      <input
+        type="text"
+        placeholder="Zoek hectometerpaal (bijv. A12 53.7)"
+        aria-label="Zoek hectometerpaal (bijv. A12 53.7)"
+        autocomplete="on"
+        class="autocomplete-input"
+      />
+      <button type="button"></button>
+      <ul class="autocomplete-result-list"></ul>
     </div>
-    <div id="eastpanel">
+    <main id="map"></main>
+    <aside>
+      <button id="collapse-button" aria-label="Paneel verbergen"></button>
+      <h1 class="title">
+        <a class="visually-hidden" href="https://www.stichtingimn.nl">Stichting incidentmanagement Nederland</a>
+      </h1>
       <div id="secondaryoptions" class="flexcontainer">
-        <a href="https://www.stichtingimn.nl"><div class="title"></div></a>
         <div class="between"></div>
         <div id="filter-melder"></div>
         <div class="between"></div>
@@ -53,7 +64,6 @@
         <button id="backtomain" title="Ga terug naar het hoofd menu">Terug naar Hoofdmenu</button>
       </div>
       <div id="mainoptions" class="flexcontainer">
-        <a href="https://www.stichtingimn.nl"><div class="title"></div></a>
         <div class="between"></div>
         <div id="layers">
           <div id="layer-body"></div>
@@ -118,7 +128,7 @@
         </div>
         <button id="options" title="Ga naar de overige opties">Andere opties</button>
       </div>
-    </div>
+    </aside>
     <script type="module" src="/scripts/app.js"></script>
   </body>
 </html>

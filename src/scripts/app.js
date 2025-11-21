@@ -7,385 +7,358 @@ import '../styles/app.css';
 import Cookies from 'js-cookie';
 import Choices from 'choices.js';
 import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
-// Sprite uses absolute URL (MapLibre requirement) - loads /sprite.png and /sprite.json automatically
+import Autocomplete from '@trevoreyre/autocomplete-js';
 
-// Start the main application code
-(function () {
-  // Cookie config
-  const cookieName = 'ongevallenradar';
+// Configuration and constants (non-DOM dependent)
+const cookieName = 'ongevallenradar';
+const defaultTypes = {
+  0: true,
+  1: true,
+};
+const defaultMeldersCat = {
+  0: true,
+  1: true,
+  2: true,
+  3: true,
+  4: true,
+  5: true,
+};
+
+// Base path configuration for assets
+const basePath = import.meta.env.VITE_BASE_PATH || '/';
+const getAssetPath = (path) => {
+  // Remove leading slash from path and ensure basePath ends with slash
+  const cleanPath = path.replace(/^\//, '');
+  const cleanBasePath = basePath.endsWith('/') ? basePath : basePath + '/';
+  return cleanBasePath + cleanPath;
+};
+
+const getBaseUrl = (path) => {
+  // Always use window.location.origin to ensure same-origin requests
+  const baseHost = window.location.origin;
+  const basePath = import.meta.env.VITE_BASE_PATH || '/';
+
+  const cleanPath = path.replace(/^\//, '');
+  const cleanBasePath = basePath.endsWith('/') ? basePath : basePath + '/';
+
+  return `${baseHost}${cleanBasePath}${cleanPath}`;
+};
+
+// GeoServer configuration
+const geoserverHost = import.meta.env.VITE_WFS_HOST || 'https://geoserver.stichtingimn.nl';
+const geoserverPath = import.meta.env.VITE_WFS_PATH || '/geoserver/ows';
+const geoserverUrl = `${geoserverHost}${geoserverPath}?`;
+
+// Unified layer configuration with metadata and default visibility
+const layerConfig = {
+  actueel: {
+    title: 'Actuele meldingen',
+    type: 'vector',
+    defaultVisible: true,
+    order: 1, // UI checkbox order
+    zIndex: 50, // Map drawing order (highest - on top)
+    sourceUrl: `${geoserverUrl}service=WFS&request=GetFeature&typename=meldingen:actueel&version=1.1.0&srsname=EPSG:4326&outputFormat=application/json`,
+  },
+  uur: {
+    title: 'Meldingen laatste zestig minuten',
+    type: 'vector',
+    defaultVisible: true,
+    order: 2, // UI checkbox order
+    zIndex: 40, // Map drawing order (below actueel)
+    sourceUrl: `${geoserverUrl}service=WFS&request=GetFeature&typename=meldingen:uur&version=1.1.0&srsname=EPSG:4326&outputFormat=application/json`,
+  },
+  vandaag: {
+    title: 'Meldingen vandaag',
+    type: 'vector',
+    defaultVisible: false,
+    order: 3, // UI checkbox order
+    zIndex: 30, // Map drawing order (below uur)
+    sourceUrl: `${geoserverUrl}service=WFS&request=GetFeature&typename=meldingen:vandaag&version=1.1.0&srsname=EPSG:4326&outputFormat=application/json`,
+  },
+  imwegen: {
+    title: 'IM-wegen',
+    type: 'raster',
+    defaultVisible: false,
+    order: 4, // UI checkbox order
+    zIndex: 10, // Map drawing order (overlay layer)
+    sourceUrl: `${geoserverUrl}service=WMS&request=GetMap&layers=im_wegen:imwegen&styles=&format=image%2Fpng&transparent=true&version=1.1.1&width=256&height=256&srs=EPSG%3A3857&bbox={bbox-epsg-3857}`,
+  },
+  bps: {
+    title: 'Hectometerpalen',
+    type: 'raster',
+    defaultVisible: false,
+    order: 5, // UI checkbox order
+    zIndex: 20, // Map drawing order (overlay layer)
+    sourceUrl: `${geoserverUrl}service=WMS&request=GetMap&layers=bps:bps_palen&styles=&format=image%2Fpng&transparent=true&version=1.1.1&width=256&height=256&srs=EPSG%3A3857&bbox={bbox-epsg-3857}`,
+  },
+  rayons: {
+    title: 'Rayons',
+    type: 'raster',
+    defaultVisible: false,
+    order: 6, // UI checkbox order
+    zIndex: 15, // Map drawing order (base overlay layer)
+    sourceUrl: `${geoserverUrl}service=WMS&request=GetMap&layers=rayons:rayons&styles=&format=image%2Fpng&transparent=true&version=1.1.1&width=256&height=256&srs=EPSG%3A3857&bbox={bbox-epsg-3857}`,
+  },
+};
+
+// Extract default visibility settings from layerConfig
+const defaultLayerInfo = Object.keys(layerConfig).reduce((acc, key) => {
+  acc[key] = layerConfig[key].defaultVisible;
+  return acc;
+}, {});
+
+// Rayons array (constant data)
+const rayons = [
+  'D50',
+  'D51',
+  'D52',
+  'D54',
+  'D55',
+  'D57',
+  'D58',
+  'D59',
+  'F01',
+  'F02',
+  'F03',
+  'F04',
+  'F05',
+  'F06',
+  'F09',
+  'F10',
+  'F11',
+  'F12',
+  'F14',
+  'F16',
+  'F17',
+  'F18',
+  'F19',
+  'F20',
+  'F21',
+  'F22',
+  'FL100',
+  'FL101',
+  'FL103',
+  'FL104',
+  'G30',
+  'G32',
+  'G33',
+  'G34',
+  'G35',
+  'G37',
+  'G38',
+  'G39',
+  'GL235',
+  'GL236',
+  'GL237',
+  'GL238',
+  'GL239',
+  'GL241',
+  'GL242',
+  'GL243',
+  'GL245',
+  'GL246',
+  'GL248',
+  'GL249',
+  'GL250',
+  'GL251',
+  'GL252',
+  'GL254',
+  'GL255',
+  'GL256',
+  'GL257',
+  'GL258',
+  'GL259',
+  'GL260',
+  'GL261',
+  'GL262',
+  'GL263',
+  'GL264',
+  'GL265',
+  'GL266',
+  'GL267',
+  'GL268',
+  'GL270',
+  'L351',
+  'L352',
+  'L353',
+  'L355',
+  'L357',
+  'L358',
+  'L359',
+  'L361',
+  'L362',
+  'L363',
+  'L364',
+  'L366',
+  'L367',
+  'L368',
+  'L369',
+  'NB296',
+  'NB297',
+  'NB299',
+  'NB300',
+  'NB302',
+  'NB303',
+  'NB304',
+  'NB305',
+  'NB306',
+  'NB307',
+  'NB309',
+  'NB310',
+  'NB311',
+  'NB312',
+  'NB314',
+  'NB316',
+  'NB318',
+  'NB319',
+  'NB320',
+  'NB321',
+  'NB323',
+  'NB324',
+  'NB325',
+  'NB326',
+  'NB327',
+  'NB328',
+  'NB329',
+  'NB330',
+  'NB331',
+  'NB332',
+  'NB333',
+  'NB334',
+  'NB335',
+  'NB336',
+  'NB337',
+  'NB338',
+  'NB339',
+  'NH111',
+  'NH113',
+  'NH114',
+  'NH115',
+  'NH116',
+  'NH117',
+  'NH118',
+  'NH121',
+  'NH122',
+  'NH123',
+  'NH124',
+  'NH125',
+  'NH126',
+  'NH127',
+  'NH128',
+  'NH129',
+  'NH130',
+  'NH131',
+  'NH132',
+  'NH133',
+  'NH134',
+  'NH135',
+  'NH136',
+  'NH137',
+  'NH138',
+  'NH141',
+  'NH142',
+  'NH143',
+  'NH150',
+  'O72',
+  'O73',
+  'O74',
+  'O75',
+  'O76',
+  'O77',
+  'O81',
+  'O82',
+  'O83',
+  'O84',
+  'O85',
+  'O86',
+  'O87',
+  'O88',
+  'O89',
+  'U205',
+  'U206',
+  'U207',
+  'U208',
+  'U210',
+  'U211',
+  'U212',
+  'U213',
+  'U214',
+  'U216',
+  'U217',
+  'U219',
+  'U220',
+  'U221',
+  'U222',
+  'U223',
+  'U224',
+  'U226',
+  'U227',
+  'U228',
+  'Z281',
+  'Z282',
+  'Z283',
+  'Z285',
+  'Z286',
+  'Z287',
+  'Z288',
+  'Z289',
+  'Z290',
+  'ZH151',
+  'ZH152',
+  'ZH153',
+  'ZH154',
+  'ZH155',
+  'ZH156',
+  'ZH157',
+  'ZH158',
+  'ZH159',
+  'ZH161',
+  'ZH162',
+  'ZH163',
+  'ZH164',
+  'ZH166',
+  'ZH167',
+  'ZH168',
+  'ZH169',
+  'ZH170',
+  'ZH171',
+  'ZH172',
+  'ZH173',
+  'ZH175',
+  'ZH177',
+  'ZH178',
+  'ZH179',
+  'ZH180',
+  'ZH181',
+  'ZH185',
+  'ZH186',
+  'ZH163a',
+];
+
+// Start the main application code (DOM-dependent only)
+document.addEventListener('DOMContentLoaded', function () {
+  // Cookie config and state variables (DOM-dependent)
   let cookieInfo;
   const loadCookie = function () {
     const cookieValue = Cookies.get(cookieName);
     cookieInfo = cookieValue ? JSON.parse(cookieValue) : null;
   };
   loadCookie();
-  // Filter types
-  let filterType;
-  let selectedTypes;
-  const defaultTypes = {
-    0: true,
-    1: true,
-  };
-  const loadTypesFromCookie = function () {
-    filterType = cookieInfo ? cookieInfo.filterType : false;
-    selectedTypes = cookieInfo ? cookieInfo.selectedTypes : defaultTypes;
-  };
-  loadTypesFromCookie();
 
-  // Beep configuration
-  let allowBeep;
-  const loadBeepFromCookie = function () {
-    allowBeep = cookieInfo ? cookieInfo.allowBeep : true;
-  };
-  loadBeepFromCookie();
-  // Melder configuration
+  // Initialize state from cookies
+  let filterType = cookieInfo ? cookieInfo.filterType : false;
+  let selectedTypes = cookieInfo ? cookieInfo.selectedTypes : defaultTypes;
+  let allowBeep = cookieInfo ? cookieInfo.allowBeep : true;
   const selectedMelders = {};
-  let selectedMeldersCat;
-  let filterMelder;
-  const defaultMeldersCat = {
-    0: true,
-    1: true,
-    2: true,
-    3: true,
-    4: true,
-    5: true,
-  };
-  const loadMelderInfoFromCookie = function () {
-    selectedMeldersCat = cookieInfo ? cookieInfo.selectedMeldersCat : defaultMeldersCat;
-    filterMelder = cookieInfo ? cookieInfo.filterMelder : false;
-  };
-  loadMelderInfoFromCookie();
-  let selectedRayons;
-  let filterRayon;
-  const loadRayonInfoFromCookie = function () {
-    selectedRayons = cookieInfo ? cookieInfo.selectedRayons : {};
-    filterRayon = cookieInfo ? cookieInfo.filterRayon : false;
-  };
-  loadRayonInfoFromCookie();
+  let selectedMeldersCat = cookieInfo ? cookieInfo.selectedMeldersCat : defaultMeldersCat;
+  let filterMelder = cookieInfo ? cookieInfo.filterMelder : false;
+  let selectedRayons = cookieInfo ? cookieInfo.selectedRayons : {};
+  let filterRayon = cookieInfo ? cookieInfo.filterRayon : false;
+  let layerInfo = cookieInfo ? cookieInfo.layers : defaultLayerInfo;
+  let cirkel = cookieInfo ? cookieInfo.cirkel : false;
 
-  // Base path configuration for assets
-  const basePath = import.meta.env.VITE_BASE_PATH || '/';
-  const getAssetPath = (path) => {
-    // Remove leading slash from path and ensure basePath ends with slash
-    const cleanPath = path.replace(/^\//, '');
-    const cleanBasePath = basePath.endsWith('/') ? basePath : basePath + '/';
-    return cleanBasePath + cleanPath;
-  };
-
-  const getBaseUrl = (path) => {
-    // Always use window.location.origin to ensure same-origin requests
-    const baseHost = window.location.origin;
-    const basePath = import.meta.env.VITE_BASE_PATH || '/';
-
-    const cleanPath = path.replace(/^\//, '');
-    const cleanBasePath = basePath.endsWith('/') ? basePath : basePath + '/';
-
-    return `${baseHost}${cleanBasePath}${cleanPath}`;
-  };
-
-  // GeoServer configuration (must be defined before layerConfig)
-  const geoserverHost = import.meta.env.VITE_WFS_HOST || 'https://geoserver.stichtingimn.nl';
-  const geoserverPath = import.meta.env.VITE_WFS_PATH || '/geoserver/ows';
-  const geoserverUrl = `${geoserverHost}${geoserverPath}?`;
-
-  // Unified layer configuration with metadata and default visibility
-  const layerConfig = {
-    actueel: {
-      title: 'Actuele meldingen',
-      type: 'vector',
-      defaultVisible: true,
-      order: 1, // UI checkbox order
-      zIndex: 50, // Map drawing order (highest - on top)
-      sourceUrl: `${geoserverUrl}service=WFS&request=GetFeature&typename=meldingen:actueel&version=1.1.0&srsname=EPSG:4326&outputFormat=application/json`,
-    },
-    uur: {
-      title: 'Meldingen laatste zestig minuten',
-      type: 'vector',
-      defaultVisible: true,
-      order: 2, // UI checkbox order
-      zIndex: 40, // Map drawing order (below actueel)
-      sourceUrl: `${geoserverUrl}service=WFS&request=GetFeature&typename=meldingen:uur&version=1.1.0&srsname=EPSG:4326&outputFormat=application/json`,
-    },
-    vandaag: {
-      title: 'Meldingen vandaag',
-      type: 'vector',
-      defaultVisible: false,
-      order: 3, // UI checkbox order
-      zIndex: 30, // Map drawing order (below uur)
-      sourceUrl: `${geoserverUrl}service=WFS&request=GetFeature&typename=meldingen:vandaag&version=1.1.0&srsname=EPSG:4326&outputFormat=application/json`,
-    },
-    imwegen: {
-      title: 'IM-wegen',
-      type: 'raster',
-      defaultVisible: false,
-      order: 4, // UI checkbox order
-      zIndex: 10, // Map drawing order (overlay layer)
-      sourceUrl: `${geoserverUrl}service=WMS&request=GetMap&layers=im_wegen:imwegen&styles=&format=image%2Fpng&transparent=true&version=1.1.1&width=256&height=256&srs=EPSG%3A3857&bbox={bbox-epsg-3857}`,
-    },
-    bps: {
-      title: 'Hectometerpalen',
-      type: 'raster',
-      defaultVisible: false,
-      order: 5, // UI checkbox order
-      zIndex: 20, // Map drawing order (overlay layer)
-      sourceUrl: `${geoserverUrl}service=WMS&request=GetMap&layers=bps:bps_palen&styles=&format=image%2Fpng&transparent=true&version=1.1.1&width=256&height=256&srs=EPSG%3A3857&bbox={bbox-epsg-3857}`,
-    },
-    rayons: {
-      title: 'Rayons',
-      type: 'raster',
-      defaultVisible: false,
-      order: 6, // UI checkbox order
-      zIndex: 15, // Map drawing order (base overlay layer)
-      sourceUrl: `${geoserverUrl}service=WMS&request=GetMap&layers=rayons:rayons&styles=&format=image%2Fpng&transparent=true&version=1.1.1&width=256&height=256&srs=EPSG%3A3857&bbox={bbox-epsg-3857}`,
-    },
-  };
-
-  // Extract default visibility settings from layerConfig
-  const defaultLayerInfo = Object.keys(layerConfig).reduce((acc, key) => {
-    acc[key] = layerConfig[key].defaultVisible;
-    return acc;
-  }, {});
-
-  let layerInfo;
-  const loadLayerInfoFromCookie = function () {
-    layerInfo = cookieInfo ? cookieInfo.layers : defaultLayerInfo;
-  };
-  loadLayerInfoFromCookie();
-
-  // Cirkel configuration
-  let cirkel;
-  const loadCirkelFromCookie = function () {
-    cirkel = cookieInfo ? cookieInfo.cirkel : false;
-    document.getElementById('cirkel').checked = cirkel;
-  };
-  loadCirkelFromCookie();
-
-  const rayons = [
-    'D50',
-    'D51',
-    'D52',
-    'D54',
-    'D55',
-    'D57',
-    'D58',
-    'D59',
-    'F01',
-    'F02',
-    'F03',
-    'F04',
-    'F05',
-    'F06',
-    'F09',
-    'F10',
-    'F11',
-    'F12',
-    'F14',
-    'F16',
-    'F17',
-    'F18',
-    'F19',
-    'F20',
-    'F21',
-    'F22',
-    'FL100',
-    'FL101',
-    'FL103',
-    'FL104',
-    'G30',
-    'G32',
-    'G33',
-    'G34',
-    'G35',
-    'G37',
-    'G38',
-    'G39',
-    'GL235',
-    'GL236',
-    'GL237',
-    'GL238',
-    'GL239',
-    'GL241',
-    'GL242',
-    'GL243',
-    'GL245',
-    'GL246',
-    'GL248',
-    'GL249',
-    'GL250',
-    'GL251',
-    'GL252',
-    'GL254',
-    'GL255',
-    'GL256',
-    'GL257',
-    'GL258',
-    'GL259',
-    'GL260',
-    'GL261',
-    'GL262',
-    'GL263',
-    'GL264',
-    'GL265',
-    'GL266',
-    'GL267',
-    'GL268',
-    'GL270',
-    'L351',
-    'L352',
-    'L353',
-    'L355',
-    'L357',
-    'L358',
-    'L359',
-    'L361',
-    'L362',
-    'L363',
-    'L364',
-    'L366',
-    'L367',
-    'L368',
-    'L369',
-    'NB296',
-    'NB297',
-    'NB299',
-    'NB300',
-    'NB302',
-    'NB303',
-    'NB304',
-    'NB305',
-    'NB306',
-    'NB307',
-    'NB309',
-    'NB310',
-    'NB311',
-    'NB312',
-    'NB314',
-    'NB316',
-    'NB318',
-    'NB319',
-    'NB320',
-    'NB321',
-    'NB323',
-    'NB324',
-    'NB325',
-    'NB326',
-    'NB327',
-    'NB328',
-    'NB329',
-    'NB330',
-    'NB331',
-    'NB332',
-    'NB333',
-    'NB334',
-    'NB335',
-    'NB336',
-    'NB337',
-    'NB338',
-    'NB339',
-    'NH111',
-    'NH113',
-    'NH114',
-    'NH115',
-    'NH116',
-    'NH117',
-    'NH118',
-    'NH121',
-    'NH122',
-    'NH123',
-    'NH124',
-    'NH125',
-    'NH126',
-    'NH127',
-    'NH128',
-    'NH129',
-    'NH130',
-    'NH131',
-    'NH132',
-    'NH133',
-    'NH134',
-    'NH135',
-    'NH136',
-    'NH137',
-    'NH138',
-    'NH141',
-    'NH142',
-    'NH143',
-    'NH150',
-    'O72',
-    'O73',
-    'O74',
-    'O75',
-    'O76',
-    'O77',
-    'O81',
-    'O82',
-    'O83',
-    'O84',
-    'O85',
-    'O86',
-    'O87',
-    'O88',
-    'O89',
-    'U205',
-    'U206',
-    'U207',
-    'U208',
-    'U210',
-    'U211',
-    'U212',
-    'U213',
-    'U214',
-    'U216',
-    'U217',
-    'U219',
-    'U220',
-    'U221',
-    'U222',
-    'U223',
-    'U224',
-    'U226',
-    'U227',
-    'U228',
-    'Z281',
-    'Z282',
-    'Z283',
-    'Z285',
-    'Z286',
-    'Z287',
-    'Z288',
-    'Z289',
-    'Z290',
-    'ZH151',
-    'ZH152',
-    'ZH153',
-    'ZH154',
-    'ZH155',
-    'ZH156',
-    'ZH157',
-    'ZH158',
-    'ZH159',
-    'ZH161',
-    'ZH162',
-    'ZH163',
-    'ZH164',
-    'ZH166',
-    'ZH167',
-    'ZH168',
-    'ZH169',
-    'ZH170',
-    'ZH171',
-    'ZH172',
-    'ZH173',
-    'ZH175',
-    'ZH177',
-    'ZH178',
-    'ZH179',
-    'ZH180',
-    'ZH181',
-    'ZH185',
-    'ZH186',
-    'ZH163a',
-  ];
+  // Set initial UI state (DOM-dependent)
+  document.getElementById('cirkel').checked = cirkel;
 
   // Track existing features for beeping functionality
   const existingFeatures = {
@@ -813,12 +786,14 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
   });
 
   // Add zoom control to the map (zoom buttons only, no compass)
+  // Determine position based on initial screen size
+  const navPosition = window.innerWidth < 800 ? 'bottom-left' : 'top-left';
   map.addControl(
     new NavigationControl({
       showCompass: false,
       showZoom: true,
     }),
-    'top-left'
+    navPosition
   );
 
   // Add custom attribution control without MapLibre prefix (collapsible)
@@ -830,6 +805,12 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
     }),
     'bottom-right'
   );
+
+  // Force map resize after DOM is loaded to fix 15px gap issue
+  // This ensures the canvas size matches the container size after CSS Grid layout is complete
+  requestAnimationFrame(() => {
+    map.resize();
+  });
 
   // Load initial data for visible layers
   map.on('load', async () => {
@@ -1003,6 +984,81 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
     if (layerInfo.vandaag) {
       loadGeoJSON('vandaag');
     }
+  });
+
+  // Initialize autocomplete after map is created (so map.easeTo() works)
+  const autocompleteButton = document.querySelector('#autocomplete button');
+  const autocompleteInput = document.querySelector('#autocomplete input');
+  autocompleteButton.classList.add('search');
+
+  // Add click handler for clear functionality
+  autocompleteButton.addEventListener('click', function () {
+    if (autocompleteButton.classList.contains('clear')) {
+      autocompleteInput.value = '';
+      autocompleteButton.classList.remove('clear');
+      autocompleteButton.classList.add('search');
+    }
+  });
+
+  new Autocomplete('#autocomplete', {
+    autoSelect: true,
+    search: (input) => {
+      // Use PDOK Locatieserver suggest API with env variable
+      const PDOK_API_BASE = import.meta.env.VITE_PDOK_API_BASE;
+      // Remove commas and periods from input before searching
+      const cleanInput = input.replace(/[,.]/g, '');
+      const url = `${PDOK_API_BASE}/suggest?rows=10&fq=type:hectometerpaal&fl=id,score,type,hectometernummer,hectometerletter,wegnummer&q=${encodeURIComponent(cleanInput)}`;
+      if (cleanInput.length < 3) {
+        return Promise.resolve([]);
+      }
+      return fetch(url)
+        .then((response) => response.json())
+        .then((data) => data.response.docs);
+    },
+    getResultValue: (result) => {
+      if (result.type === 'hectometerpaal') {
+        const hm = (parseInt(result.hectometernummer, 10) / 10).toFixed(1);
+        const letter = result.hectometerletter ? ` ${result.hectometerletter}` : '';
+        return `Hectometerpaal ${result.wegnummer}-${hm}${letter}`;
+      }
+      return result.weergavenaam;
+    },
+    onSubmit: (result) => {
+      if (result && result.id) {
+        const PDOK_API_BASE = import.meta.env.VITE_PDOK_API_BASE;
+        const getUrl = `${PDOK_API_BASE}/lookup?id=${result.id}`;
+        fetch(getUrl)
+          .then((response) => response.json())
+          .then((data) => {
+            const zoomlevel = {
+              gemeente: 9,
+              woonplaats: 9,
+              weg: 14,
+              hectometerpaal: 18,
+              postcode: 14,
+              adres: 14,
+            };
+            const doc = data.response.docs[0];
+            const location = {
+              center: doc.centroide_ll
+                .slice(6, -1)
+                .split(' ')
+                .map((x) => parseFloat(x, 10)),
+              zoom: zoomlevel[doc.type],
+            };
+            // Use the map instance to fly to the selected location
+            map.easeTo({
+              center: location.center,
+              zoom: location.zoom,
+              duration: 10,
+            });
+
+            // Change button class from search to clear after location is selected
+            autocompleteButton.classList.remove('search');
+            autocompleteButton.classList.add('clear');
+          });
+      }
+    },
   });
 
   // MapLibre popup implementation
@@ -1385,6 +1441,22 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
     });
   });
 
+  // Collapse/expand sidebar (aside) with sliding effect and resize map
+  const eastPanel = document.querySelector('aside');
+  const collapseButton = document.getElementById('collapse-button');
+  const mapContainer = document.getElementById('map');
+  collapseButton.addEventListener('click', function () {
+    eastPanel.classList.toggle('collapsed');
+    if (eastPanel.classList.contains('collapsed')) {
+      mapContainer.style.width = 'calc(100vw - 15px)';
+    } else {
+      mapContainer.style.width = 'calc(100vw - 340px)';
+    }
+    if (window.map && typeof window.map.resize === 'function') {
+      window.map.resize();
+    }
+  });
+
   const onChangeCirkel = function (evt) {
     cirkel = evt.target.checked;
 
@@ -1455,27 +1527,6 @@ import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
 
   document.getElementById('cirkel').addEventListener('change', onChangeCirkel);
 
-  const collapsibleEl = document.getElementById('eastpanel');
-  const buttonEl = document.getElementById('collapse-button');
-  const mapEl = document.getElementById('map');
-  const centerPanelEl = document.getElementById('centerpanel');
-  let expanded = true;
-  buttonEl.addEventListener('click', function () {
-    if (expanded) {
-      mapEl.style.width = 'calc(100% - 15px)';
-      centerPanelEl.style.right = '0px';
-      collapsibleEl.style.display = 'none';
-    } else {
-      mapEl.style.width = 'calc(100% - 340px)';
-      centerPanelEl.style.right = '325px';
-      collapsibleEl.style.display = '';
-    }
-    buttonEl.classList.toggle('expanded');
-    buttonEl.classList.toggle('collapsed');
-    expanded = !expanded;
-    map.resize(); // MapLibre GL JS equivalent of ol.Map.updateSize()
-  });
-
   setDateTime();
   window.setInterval(reloadFeatures, 10000);
-})();
+});

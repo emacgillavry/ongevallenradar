@@ -1,3 +1,111 @@
+#autocomplete {
+  height: 56px;
+  grid-row: 1;
+  grid-column: 1;
+  margin: 0 auto 0 auto;
+  width: 400px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  z-index: 100;
+}
+.autocomplete-input {
+  box-sizing: border-box;
+  min-height: 44px;
+  flex: 1;
+  border-left: 1px solid #ddd;
+  border-right: none;
+  border-top: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+  border-top-left-radius: 2.5px;
+  border-bottom-left-radius: 2.5px;
+  font-family: Verdana, Arial, 'Trebuchet MS', Helvetica, sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  padding: 7.5px 0 3.75px 8px;
+  outline: none;
+  background-color: #f9f9f9;
+}
+
+.autocomplete-input::placeholder {
+  color: #666;
+  opacity: 1;
+}
+
+/* Autocomplete dropdown styles */
+.autocomplete-result-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  max-height: 260px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: #fff;
+  border: 1px solid #d3e6ec;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  z-index: 200;
+  overflow-y: auto;
+}
+
+.autocomplete-result-list li {
+  padding: 10px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #000;
+  transition: background 0.2s;
+}
+
+.autocomplete-result-list li:hover,
+.autocomplete-result-list li.active,
+.autocomplete-result[aria-selected='true'] {
+  background: #d3e6ec;
+}
+
+#autocomplete button {
+  background-color: #f9f9f9;
+  border-color: #ddd;
+  border-style: solid;
+  border-top-width: 1px;
+  border-right-width: 1px;
+  border-bottom-width: 1px;
+  border-left-width: 0;
+  border-top-right-radius: 2.5px;
+  border-bottom-right-radius: 2.5px;
+  background-position: center center;
+  background-repeat: no-repeat;
+  display: block;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  height: 44px;
+  width: 32px;
+  display: flex;
+}
+
+#autocomplete button.search {
+  background-image: url('../assets/images/search.svg');
+}
+
+#autocomplete button.clear {
+  background-image: url('../assets/images/close.svg');
+  cursor: pointer;
+}
+
+/* Visually hide but keep accessible */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 * {
   box-sizing: border-box;
 }
@@ -23,6 +131,11 @@ body {
   font-size: 14px !important;
   line-height: 1.42857143;
   color: #333;
+  overflow-x: hidden;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  grid-template-columns: 1fr 340px;
+  height: 100vh;
 }
 
 /* Choices.js customizations */
@@ -34,6 +147,17 @@ body {
 .choices__list.choices__list--dropdown {
   z-index: 10000 !important;
 }
+
+.choices__input::placeholder {
+  color: #666 !important;
+}
+
+.choices__list--dropdown .choices__item--highlighted,
+.choices__list--dropdown .choices__item--selectable.is-highlighted,
+.choices__list[aria-expanded] .choices__item--selectable.is-highlighted {
+  background-color: #d3e6ec !important;
+}
+
 label {
   display: inline-block;
   margin-bottom: 5px;
@@ -70,11 +194,14 @@ button {
 #clear-settings {
   margin: 30px 0 0 30px;
 }
-.title {
-  margin: 15px 0 0 30px;
+h1 {
+  padding: 15px 0 0 30px;
+  margin: 0;
   background: white url(../assets/images/logo.svg) no-repeat left;
+  background-position-x: 30px;
+  background-position-y: 19px;
   background-size: 275px 72px;
-  height: 80px;
+  height: 128px;
 }
 #layers {
   background-color: white;
@@ -142,35 +269,59 @@ button {
   margin: 10px;
 }
 #map {
-  min-height: 735px;
+  grid-row: 1 / 3;
+  grid-column: 1 / 2;
+  height: 100%;
+  width: 100%;
+  z-index: 1;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+aside {
+  position: relative;
+  grid-row: 1 / 3;
+  grid-column: 2 / 3;
+  width: 340px;
+  height: 100%;
+  background: #d3e6ec;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 10;
+  padding-left: 15px;
+}
+
+aside > div {
+  background: #fff;
+}
+
+aside.collapsed {
+  width: 15px;
+  min-width: 15px;
+  max-width: 15px;
+  overflow: hidden;
+  padding-left: 15px;
+}
+
+aside.collapsed #collapse-button {
+  transform: rotate(180deg);
+}
+
+#collapse-button {
   position: absolute;
   top: 0;
   left: 0;
-  background-color: white;
-  width: calc(100% - 340px);
-  height: 100%;
-}
-
-#centerpanel,
-#eastpanel {
-  min-height: 735px;
-  height: 100%;
-  position: absolute;
-  top: 0;
-}
-
-#centerpanel {
   width: 15px;
+  height: 15px;
   background-color: #d3e6ec;
-  right: 325px;
+  background-image: url(../assets/images/collapse.svg);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 15px 15px;
+  border: none;
+  cursor: pointer;
+  z-index: 20;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-#eastpanel {
-  background-color: white;
-  width: 325px;
-  right: 0;
-  overflow: auto;
-}
 #options,
 #backtomain {
   padding-top: 10px;
@@ -181,31 +332,22 @@ button {
 }
 #mainoptions {
   width: 100%;
-  height: 100%;
+  height: calc(100% - 128px);
+  background-color: #fff;
 }
 #secondaryoptions {
   display: none;
+  background-color: #fff;
+  justify-content: start;
+  height: calc(100% - 128px);
 }
 #filter-button {
   width: 50px;
   height: 20px;
 }
-#collapse-button {
-  width: 15px;
-  height: 15px;
-  position: absolute;
-  top: 0;
-}
-.collapsed {
-  background-image: url(../assets/images/collapse.svg);
-  background-size: 15px 15px;
-  cursor: pointer;
-}
-.expanded {
-  background-image: url(../assets/images/expand.svg);
-  background-size: 15px 15px;
-  cursor: pointer;
-}
+
+/* Remove .expanded and .collapsed image swap rules */
+/* .collapsed, .expanded { display: none; } */
 .bordertext {
   text-align: right;
   color: #d3e6ec;
@@ -287,14 +429,30 @@ label:has(input[disabled]) {
 
 /* Mobile styles for screens 800px and smaller */
 @media (max-width: 800px) {
-  #eastpanel {
-    display: none;
+  body {
+    grid-template-rows: auto 1fr;
+    grid-template-columns: 1fr;
   }
-  #centerpanel {
-    display: none;
+  #autocomplete {
+    width: 100vw;
+    max-width: 100vw;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 12px 16px;
+    height: 56px;
   }
   #map {
-    width: 100%;
+    grid-row: 2;
+    grid-column: 1;
+    height: 100%;
+    width: 100vw;
+  }
+  aside {
+    display: none;
+  }
+  #collapse-button {
+    display: none;
   }
 }
 
