@@ -12,12 +12,19 @@
   z-index: 100;
 }
 .autocomplete-input {
+  box-sizing: border-box;
+  min-height: 44px;
   flex: 1;
-  border: 1px solid #ddd;
-  border-radius: 2.5px;
+  border-left: 1px solid #ddd;
+  border-right: none;
+  border-top: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+  border-top-left-radius: 2.5px;
+  border-bottom-left-radius: 2.5px;
   font-family: Verdana, Arial, 'Trebuchet MS', Helvetica, sans-serif;
   font-size: 14px;
-  padding: 6px 8px;
+  line-height: 20px;
+  padding: 7.5px 0 3.75px 8px;
   outline: none;
   background-color: #f9f9f9;
 }
@@ -27,16 +34,6 @@
   opacity: 1;
 }
 
-#autocomplete button {
-  background: #077395;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  padding: 6px 16px;
-  font-size: 16px;
-  cursor: pointer;
-  margin-left: 8px;
-}
 /* Autocomplete dropdown styles */
 .autocomplete-result-list {
   position: absolute;
@@ -57,7 +54,7 @@
 .autocomplete-result-list li {
   padding: 10px 16px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 14px;
   color: #000;
   transition: background 0.2s;
 }
@@ -66,6 +63,35 @@
 .autocomplete-result-list li.active,
 .autocomplete-result[aria-selected='true'] {
   background: #d3e6ec;
+}
+
+#autocomplete button {
+  background-color: #f9f9f9;
+  border-color: #ddd;
+  border-style: solid;
+  border-top-width: 1px;
+  border-right-width: 1px;
+  border-bottom-width: 1px;
+  border-left-width: 0;
+  border-top-right-radius: 2.5px;
+  border-bottom-right-radius: 2.5px;
+  background-position: center center;
+  background-repeat: no-repeat;
+  display: block;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  height: 44px;
+  width: 32px;
+  display: flex;
+}
+
+#autocomplete button.search {
+  background-image: url('../assets/images/search.svg');
+}
+
+#autocomplete button.clear {
+  background-image: url('../assets/images/close.svg');
+  cursor: pointer;
 }
 
 /* Visually hide but keep accessible */

@@ -987,6 +987,19 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   // Initialize autocomplete after map is created (so map.easeTo() works)
+  const autocompleteButton = document.querySelector('#autocomplete button');
+  const autocompleteInput = document.querySelector('#autocomplete input');
+  autocompleteButton.classList.add('search');
+
+  // Add click handler for clear functionality
+  autocompleteButton.addEventListener('click', function () {
+    if (autocompleteButton.classList.contains('clear')) {
+      autocompleteInput.value = '';
+      autocompleteButton.classList.remove('clear');
+      autocompleteButton.classList.add('search');
+    }
+  });
+
   new Autocomplete('#autocomplete', {
     autoSelect: true,
     search: (input) => {
@@ -1039,6 +1052,10 @@ document.addEventListener('DOMContentLoaded', function () {
               zoom: location.zoom,
               duration: 10,
             });
+
+            // Change button class from search to clear after location is selected
+            autocompleteButton.classList.remove('search');
+            autocompleteButton.classList.add('clear');
           });
       }
     },
