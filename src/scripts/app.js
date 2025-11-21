@@ -992,15 +992,24 @@ document.addEventListener('DOMContentLoaded', function () {
     search: (input) => {
       // Use PDOK Locatieserver suggest API with env variable
       const PDOK_API_BASE = import.meta.env.VITE_PDOK_API_BASE;
-      const url = `${PDOK_API_BASE}/suggest?rows=10&fq=type:hectometerpaal&q=${encodeURIComponent(input)}`;
-      if (input.length < 3) {
+      // Remove commas and periods from input before searching
+      const cleanInput = input.replace(/[,.]/g, '');
+      const url = `${PDOK_API_BASE}/suggest?rows=10&fq=type:hectometerpaal&fl=id,score,type,hectometernummer,hectometerletter,wegnummer&q=${encodeURIComponent(cleanInput)}`;
+      if (cleanInput.length < 3) {
         return Promise.resolve([]);
       }
       return fetch(url)
         .then((response) => response.json())
         .then((data) => data.response.docs);
     },
-    getResultValue: (result) => result.weergavenaam,
+    getResultValue: (result) => {
+      if (result.type === 'hectometerpaal') {
+        const hm = (parseInt(result.hectometernummer, 10) / 10).toFixed(1);
+        const letter = result.hectometerletter ? ` ${result.hectometerletter}` : '';
+        return `Hectometerpaal ${result.wegnummer}-${hm}${letter}`;
+      }
+      return result.weergavenaam;
+    },
     onSubmit: (result) => {
       if (result && result.id) {
         const PDOK_API_BASE = import.meta.env.VITE_PDOK_API_BASE;
