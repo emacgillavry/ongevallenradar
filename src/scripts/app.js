@@ -938,9 +938,9 @@ document.addEventListener('DOMContentLoaded', function () {
           layout: {
             visibility: layerInfo[id] ? 'visible' : 'none',
             'text-field': textExpression,
-            'text-font': ['Open Sans Bold'],
+            'text-font': ['Arial Bold'],
             'text-size': 11,
-            'text-offset': [0, -3],
+            'text-offset': [0, -3.25],
             'text-anchor': 'center',
             'text-allow-overlap': true,
             'text-ignore-placement': false,
