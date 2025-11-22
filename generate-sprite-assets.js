@@ -5,14 +5,25 @@ const { createCanvas } = require('canvas');
 const fs = require('fs');
 const path = require('path');
 
-function createTriangleImageData(fillColor, strokeColor, size = 27) {
+function createTriangleImageData(fillColor, strokeColor, size = 27, actualRadius = null) {
   const canvas = createCanvas(size, size);
   const ctx = canvas.getContext('2d');
 
+  // OpenLayers vs Canvas stroke rendering difference:
+  // - OpenLayers: stroke extends outside the radius (total visual size = radius + stroke/2)
+  // - Canvas: stroke is centered on the path (half inside, half outside)
+  // Use actualRadius if provided (for matching OpenLayers sizes), otherwise use default calculation
+  const radius = actualRadius !== null ? actualRadius : (size - 4) / 2;
+  const strokeWidth = 2;
+
   // Calculate triangle points (equilateral triangle pointing up)
   const centerX = size / 2;
-  const centerY = size / 2;
-  const radius = (size - 4) / 2; // Leave space for stroke
+  // For an equilateral triangle inscribed in a circle:
+  // - Top vertex (angle -90°): y = centerY - radius
+  // - Bottom vertices (angles 30° and 150°): y = centerY + radius * sin(30°) = centerY + radius/2
+  // With stroke centered on the path, we need strokeWidth/2 padding on all sides
+  // Position centerY so top vertex with stroke fits: centerY = radius + strokeWidth
+  const centerY = radius + strokeWidth;
 
   const points = [];
   for (let i = 0; i < 3; i++) {
@@ -93,17 +104,45 @@ function generateSpriteAtScale(scale = 1) {
 
   // Generate triangles (top row)
   colors.forEach((color, index) => {
-    const triangleCanvas = createTriangleImageData(color.fill, color.stroke, size);
+    // Match OpenLayers triangle size with stroke width 2
+    // OpenLayers stroke extends outside, Canvas stroke is centered
+    // To match visual appearance, add half stroke width to the radius
+    const strokeWidth = 2 * scale;
+    // lightgray uses radius 10, all others use radius 13.5
+    const olRadius = (color.name === 'lightgray' ? 10 : 13.5) * scale;
+    const canvasRadius = olRadius + strokeWidth / 2; // Adjust for Canvas stroke centering
+
+    // Calculate the visual size needed to contain the triangle
+    // For an equilateral triangle pointing up:
+    // - Height from center to top vertex: radius
+    // - Height from center to bottom edge: radius * 0.5
+    // - Total height: radius * 1.5
+    // Stroke is centered on the path, so it adds strokeWidth/2 on each side
+    // Since we already adjusted canvasRadius to include stroke, we only need to add strokeWidth once more
+    const triangleHeight = canvasRadius * 1.5;
+    const triangleWidth = canvasRadius * Math.sqrt(3); // Width of equilateral triangle
+    const visualSize = Math.ceil(Math.max(triangleHeight, triangleWidth) + strokeWidth);
+
+    const triangleCanvas = createTriangleImageData(
+      color.fill,
+      color.stroke,
+      visualSize,
+      canvasRadius
+    );
+
+    // Center the triangle within the standard grid slot
+    const centerX = x + (size - visualSize) / 2;
+    const centerY = y + (size - visualSize) / 2;
 
     // Draw to sprite canvas
-    spriteCtx.drawImage(triangleCanvas, x, y);
+    spriteCtx.drawImage(triangleCanvas, centerX, centerY);
 
     // Add to JSON metadata
     spriteJson[`triangle-${color.name}`] = {
-      x: x,
-      y: y,
-      width: size,
-      height: size,
+      x: Math.round(centerX),
+      y: Math.round(centerY),
+      width: visualSize,
+      height: visualSize,
       pixelRatio: scale,
     };
 

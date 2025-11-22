@@ -940,7 +940,7 @@ document.addEventListener('DOMContentLoaded', function () {
             'text-field': textExpression,
             'text-font': ['Arial Bold'],
             'text-size': 11,
-            'text-offset': [0, -3],
+            'text-offset': [0, -3.25],
             'text-anchor': 'center',
             'text-allow-overlap': true,
             'text-ignore-placement': false,
