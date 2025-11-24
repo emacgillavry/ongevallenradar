@@ -14,7 +14,7 @@ function createTriangleImageData(fillColor, strokeColor, size = 27, actualRadius
   // - Canvas: stroke is centered on the path (half inside, half outside)
   // Use actualRadius if provided (for matching OpenLayers sizes), otherwise use default calculation
   const radius = actualRadius !== null ? actualRadius : (size - 4) / 2;
-  const strokeWidth = 2;
+  const strokeWidth = 1.5;
 
   // Calculate triangle points (equilateral triangle pointing up)
   const centerX = size / 2;
@@ -45,7 +45,7 @@ function createTriangleImageData(fillColor, strokeColor, size = 27, actualRadius
   ctx.fillStyle = fillColor;
   ctx.fill();
   ctx.strokeStyle = strokeColor;
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 1.5;
   ctx.stroke();
 
   return canvas;
@@ -68,7 +68,7 @@ function createCircleImageData(fillColor, strokeColor, size = 27, actualRadius =
   ctx.fillStyle = fillColor;
   ctx.fill();
   ctx.strokeStyle = strokeColor;
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 1.5;
   ctx.stroke();
 
   return canvas;
@@ -104,12 +104,12 @@ function generateSpriteAtScale(scale = 1) {
 
   // Generate triangles (top row)
   colors.forEach((color, index) => {
-    // Match OpenLayers triangle size with stroke width 2
+    // Match OpenLayers triangle size with stroke width 1.5
     // OpenLayers stroke extends outside, Canvas stroke is centered
     // To match visual appearance, add half stroke width to the radius
-    const strokeWidth = 2 * scale;
-    // lightgray uses radius 10, all others use radius 13.5
-    const olRadius = (color.name === 'lightgray' ? 10 : 13.5) * scale;
+    const strokeWidth = 1.5 * scale;
+    // lightgray uses radius 9.25, all others use radius 12.75
+    const olRadius = (color.name === 'lightgray' ? 9.25 : 12.75) * scale;
     const canvasRadius = olRadius + strokeWidth / 2; // Adjust for Canvas stroke centering
 
     // Calculate the visual size needed to contain the triangle

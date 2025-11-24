@@ -1,37 +1,37 @@
 {
   "triangle-red": {
-    "x": 0,
-    "y": 0,
-    "width": 55,
-    "height": 55,
+    "x": 2,
+    "y": 2,
+    "width": 50,
+    "height": 50,
     "pixelRatio": 2
   },
   "triangle-orange": {
-    "x": 56,
-    "y": 0,
-    "width": 55,
-    "height": 55,
+    "x": 58,
+    "y": 2,
+    "width": 50,
+    "height": 50,
     "pixelRatio": 2
   },
   "triangle-yellow": {
-    "x": 112,
-    "y": 0,
-    "width": 55,
-    "height": 55,
+    "x": 114,
+    "y": 2,
+    "width": 50,
+    "height": 50,
     "pixelRatio": 2
   },
   "triangle-gray": {
-    "x": 168,
-    "y": 0,
-    "width": 55,
-    "height": 55,
+    "x": 170,
+    "y": 2,
+    "width": 50,
+    "height": 50,
     "pixelRatio": 2
   },
   "triangle-lightgray": {
-    "x": 230,
-    "y": 6,
-    "width": 43,
-    "height": 43,
+    "x": 232,
+    "y": 8,
+    "width": 38,
+    "height": 38,
     "pixelRatio": 2
   },
   "circle-red": {
