@@ -688,8 +688,8 @@ document.addEventListener('DOMContentLoaded', function () {
             'https://kaartserver.incidentcentrale.nl/{z}/{x}/{y}.png',
         ],
         tileSize: 256,
-        minZoom: 7,
-        maxZoom: 17,
+        minzoom: 7,
+        maxzoom: 17,
         bounds: [2.81, 50.29, 8.43, 53.75],
       },
     };
