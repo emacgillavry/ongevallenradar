@@ -688,8 +688,8 @@ document.addEventListener('DOMContentLoaded', function () {
             'https://kaartserver.incidentcentrale.nl/{z}/{x}/{y}.png',
         ],
         tileSize: 256,
-        minZoom: 7,
-        maxZoom: 17,
+        minzoom: 7,
+        maxzoom: 17,
         bounds: [2.81, 50.29, 8.43, 53.75],
       },
     };
@@ -768,6 +768,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // import.meta.env.PROD flag to detect production mode.
     validateStyle: import.meta.env.PROD ? false : true,
     center: [5.12, 52.37], // Netherlands center in WGS84
+    cancelPendingTileRequestsWhileZooming: false,
     zoom: 8,
     maxZoom: 17,
     minZoom: 7,
@@ -811,6 +812,8 @@ document.addEventListener('DOMContentLoaded', function () {
   requestAnimationFrame(() => {
     map.resize();
   });
+
+  map.scrollZoom.setWheelZoomRate(1);
 
   // Load initial data for visible layers
   map.on('load', async () => {
