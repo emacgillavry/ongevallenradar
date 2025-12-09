@@ -7,7 +7,6 @@ import '../styles/app.css';
 import Cookies from 'js-cookie';
 import Choices from 'choices.js';
 import { Map, Popup, NavigationControl, AttributionControl } from 'maplibre-gl';
-import Autocomplete from '@trevoreyre/autocomplete-js';
 
 // Configuration and constants (non-DOM dependent)
 const cookieName = 'ongevallenradar';
@@ -987,81 +986,6 @@ document.addEventListener('DOMContentLoaded', function () {
     if (layerInfo.vandaag) {
       loadGeoJSON('vandaag');
     }
-  });
-
-  // Initialize autocomplete after map is created (so map.easeTo() works)
-  const autocompleteButton = document.querySelector('#autocomplete button');
-  const autocompleteInput = document.querySelector('#autocomplete input');
-  autocompleteButton.classList.add('search');
-
-  // Add click handler for clear functionality
-  autocompleteButton.addEventListener('click', function () {
-    if (autocompleteButton.classList.contains('clear')) {
-      autocompleteInput.value = '';
-      autocompleteButton.classList.remove('clear');
-      autocompleteButton.classList.add('search');
-    }
-  });
-
-  new Autocomplete('#autocomplete', {
-    autoSelect: true,
-    search: (input) => {
-      // Use PDOK Locatieserver suggest API with env variable
-      const PDOK_API_BASE = import.meta.env.VITE_PDOK_API_BASE;
-      // Remove commas and periods from input before searching
-      const cleanInput = input.replace(/[,.]/g, '');
-      const url = `${PDOK_API_BASE}/suggest?rows=10&fq=type:hectometerpaal&fl=id,score,type,hectometernummer,hectometerletter,wegnummer&q=${encodeURIComponent(cleanInput)}`;
-      if (cleanInput.length < 3) {
-        return Promise.resolve([]);
-      }
-      return fetch(url)
-        .then((response) => response.json())
-        .then((data) => data.response.docs);
-    },
-    getResultValue: (result) => {
-      if (result.type === 'hectometerpaal') {
-        const hm = (parseInt(result.hectometernummer, 10) / 10).toFixed(1);
-        const letter = result.hectometerletter ? ` ${result.hectometerletter}` : '';
-        return `Hectometerpaal ${result.wegnummer}-${hm}${letter}`;
-      }
-      return result.weergavenaam;
-    },
-    onSubmit: (result) => {
-      if (result && result.id) {
-        const PDOK_API_BASE = import.meta.env.VITE_PDOK_API_BASE;
-        const getUrl = `${PDOK_API_BASE}/lookup?id=${result.id}`;
-        fetch(getUrl)
-          .then((response) => response.json())
-          .then((data) => {
-            const zoomlevel = {
-              gemeente: 9,
-              woonplaats: 9,
-              weg: 14,
-              hectometerpaal: 18,
-              postcode: 14,
-              adres: 14,
-            };
-            const doc = data.response.docs[0];
-            const location = {
-              center: doc.centroide_ll
-                .slice(6, -1)
-                .split(' ')
-                .map((x) => parseFloat(x, 10)),
-              zoom: zoomlevel[doc.type],
-            };
-            // Use the map instance to fly to the selected location
-            map.easeTo({
-              center: location.center,
-              zoom: location.zoom,
-              duration: 10,
-            });
-
-            // Change button class from search to clear after location is selected
-            autocompleteButton.classList.remove('search');
-            autocompleteButton.classList.add('clear');
-          });
-      }
-    },
   });
 
   // MapLibre popup implementation
