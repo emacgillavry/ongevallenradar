@@ -1,4 +1,5 @@
 import { defineConfig, loadEnv } from 'vite';
+import htmlMinifier from 'vite-plugin-html-minifier';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 import compression from 'vite-plugin-compression';
 import { execSync } from 'child_process';
@@ -50,6 +51,21 @@ export default defineConfig(({ mode }) => {
             .replace('__GIT_BRANCH__', gitBranch);
         },
       },
+      htmlMinifier({
+        minify: {
+          collapseWhitespace: true,
+          keepClosingSlash: true,
+          removeComments: false,
+          removeRedundantAttributes: true,
+          removeScriptTypeAttributes: true,
+          removeStyleLinkTypeAttributes: true,
+          removeEmptyAttributes: true,
+          useShortDoctype: true,
+          minifyCSS: true,
+          minifyJS: true,
+          minifyURLs: true,
+        },
+      }),
       viteStaticCopy({
         targets: [
           {
