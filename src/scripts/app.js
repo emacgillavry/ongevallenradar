@@ -689,7 +689,7 @@ document.addEventListener('DOMContentLoaded', function () {
         ],
         tileSize: 256,
         minzoom: 7,
-        maxzoom: 17,
+        maxzoom: 18,
         bounds: [2.81, 50.29, 8.43, 53.75],
       },
     };
