@@ -1,37 +1,30 @@
 {
   "triangle-red": {
-    "x": 1,
-    "y": 1,
-    "width": 25,
-    "height": 25,
+    "x": 0,
+    "y": 0,
+    "width": 28,
+    "height": 28,
     "pixelRatio": 1
   },
   "triangle-orange": {
-    "x": 29,
-    "y": 1,
-    "width": 25,
-    "height": 25,
+    "x": 28,
+    "y": 0,
+    "width": 28,
+    "height": 28,
     "pixelRatio": 1
   },
   "triangle-yellow": {
-    "x": 57,
-    "y": 1,
-    "width": 25,
-    "height": 25,
-    "pixelRatio": 1
-  },
-  "triangle-gray": {
-    "x": 85,
-    "y": 1,
-    "width": 25,
-    "height": 25,
+    "x": 56,
+    "y": 0,
+    "width": 28,
+    "height": 28,
     "pixelRatio": 1
   },
   "triangle-lightgray": {
-    "x": 116,
-    "y": 4,
-    "width": 19,
-    "height": 19,
+    "x": 87,
+    "y": 3,
+    "width": 22,
+    "height": 22,
     "pixelRatio": 1
   },
   "circle-red": {
@@ -55,15 +48,8 @@
     "height": 22,
     "pixelRatio": 1
   },
-  "circle-gray": {
-    "x": 87,
-    "y": 31,
-    "width": 22,
-    "height": 22,
-    "pixelRatio": 1
-  },
   "circle-lightgray": {
-    "x": 116,
+    "x": 88,
     "y": 32,
     "width": 20,
     "height": 20,
