@@ -12,6 +12,10 @@ export default defineConfig(({ mode }) => {
     base: env.VITE_BASE_PATH || '/', // Set base path for deployment
     root: 'src', // Set src as the root directory
     publicDir: '../public', // Public assets directory
+    server: {
+      host: '0.0.0.0', // Expose to network
+      port: 5173, // Default Vite port
+    },
     build: {
       outDir: '../dist', // Build output to dist directory at project root
       emptyOutDir: true, // Clear dist directory on build
