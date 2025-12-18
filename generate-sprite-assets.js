@@ -5,16 +5,24 @@ const { createCanvas } = require('canvas');
 const fs = require('fs');
 const path = require('path');
 
-function createTriangleImageData(fillColor, strokeColor, size = 27, actualRadius = null) {
+function createTriangleImageData(
+  fillColor,
+  strokeColor,
+  size = 27,
+  actualRadius = null,
+  strokeWidth = 2
+) {
   const canvas = createCanvas(size, size);
   const ctx = canvas.getContext('2d');
+
+  // Disable anti-aliasing for crisp rendering
+  ctx.imageSmoothingEnabled = false;
 
   // OpenLayers vs Canvas stroke rendering difference:
   // - OpenLayers: stroke extends outside the radius (total visual size = radius + stroke/2)
   // - Canvas: stroke is centered on the path (half inside, half outside)
   // Use actualRadius if provided (for matching OpenLayers sizes), otherwise use default calculation
   const radius = actualRadius !== null ? actualRadius : (size - 4) / 2;
-  const strokeWidth = 2;
 
   // Calculate triangle points (equilateral triangle pointing up)
   const centerX = size / 2;
@@ -45,15 +53,24 @@ function createTriangleImageData(fillColor, strokeColor, size = 27, actualRadius
   ctx.fillStyle = fillColor;
   ctx.fill();
   ctx.strokeStyle = strokeColor;
-  ctx.lineWidth = 2;
+  ctx.lineWidth = strokeWidth;
   ctx.stroke();
 
   return canvas;
 }
 
-function createCircleImageData(fillColor, strokeColor, size = 27, actualRadius = null) {
+function createCircleImageData(
+  fillColor,
+  strokeColor,
+  size = 27,
+  actualRadius = null,
+  strokeWidth = 2
+) {
   const canvas = createCanvas(size, size);
   const ctx = canvas.getContext('2d');
+
+  // Disable anti-aliasing for crisp rendering
+  ctx.imageSmoothingEnabled = false;
 
   const centerX = size / 2;
   const centerY = size / 2;
@@ -68,7 +85,7 @@ function createCircleImageData(fillColor, strokeColor, size = 27, actualRadius =
   ctx.fillStyle = fillColor;
   ctx.fill();
   ctx.strokeStyle = strokeColor;
-  ctx.lineWidth = 2;
+  ctx.lineWidth = strokeWidth;
   ctx.stroke();
 
   return canvas;
@@ -126,7 +143,8 @@ function generateSpriteAtScale(scale = 1) {
       color.fill,
       color.stroke,
       visualSize,
-      canvasRadius
+      canvasRadius,
+      strokeWidth
     );
 
     // Center the triangle within the standard grid slot
@@ -157,7 +175,8 @@ function generateSpriteAtScale(scale = 1) {
     // - OpenLayers: stroke extends outside the radius (total visual size = radius + stroke/2)
     // - Canvas: stroke is centered on the path (half inside, half outside)
     // To match OpenLayers visual appearance, we need to add half stroke width to the radius
-    const strokeWidth = 2 * scale;
+    // Use 1.5x scale for stroke to look visually consistent on high-DPI (2px base, 3px for @2x)
+    const strokeWidth = 2 * (scale === 1 ? 1 : 1.5);
     const olRadius = (color.name === 'lightgray' ? 8 : 9) * scale; // Original OpenLayers radius scaled
     const canvasRadius = olRadius + strokeWidth / 2; // Adjust for Canvas stroke centering
 
@@ -165,7 +184,13 @@ function generateSpriteAtScale(scale = 1) {
     const visualSize = Math.ceil(canvasRadius * 2 + strokeWidth);
 
     // Create circle with appropriate canvas size
-    const circleCanvas = createCircleImageData(color.fill, color.stroke, visualSize, canvasRadius);
+    const circleCanvas = createCircleImageData(
+      color.fill,
+      color.stroke,
+      visualSize,
+      canvasRadius,
+      strokeWidth
+    );
 
     // Center the circle within the standard grid slot
     const centerX = x + (size - visualSize) / 2;

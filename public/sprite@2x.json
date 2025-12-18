@@ -28,31 +28,31 @@
     "pixelRatio": 2
   },
   "circle-red": {
-    "x": 5,
-    "y": 61,
-    "width": 44,
-    "height": 44,
+    "x": 6,
+    "y": 62,
+    "width": 42,
+    "height": 42,
     "pixelRatio": 2
   },
   "circle-orange": {
-    "x": 61,
-    "y": 61,
-    "width": 44,
-    "height": 44,
+    "x": 62,
+    "y": 62,
+    "width": 42,
+    "height": 42,
     "pixelRatio": 2
   },
   "circle-yellow": {
-    "x": 117,
-    "y": 61,
-    "width": 44,
-    "height": 44,
+    "x": 118,
+    "y": 62,
+    "width": 42,
+    "height": 42,
     "pixelRatio": 2
   },
   "circle-lightgray": {
-    "x": 175,
-    "y": 63,
-    "width": 40,
-    "height": 40,
+    "x": 176,
+    "y": 64,
+    "width": 38,
+    "height": 38,
     "pixelRatio": 2
   }
 }
