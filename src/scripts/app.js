@@ -795,7 +795,7 @@ document.addEventListener('DOMContentLoaded', function () {
       'NavigationControl.ZoomOut': 'Zoom uit',
     },
     dragRotate: false, // Disable map rotation with right-click + drag
-    touchZoomRotate: false, // Disable rotation on touch devices
+    touchZoomRotate: true, // Enable pinch to zoom (rotation disabled after map loads)
     pitchWithRotate: false, // Disable pitch when rotating
     touchPitch: false, // Disable pitch on touch devices
   });
@@ -828,6 +828,9 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   map.scrollZoom.setWheelZoomRate(1);
+
+  // Disable rotation on touch devices while keeping zoom enabled
+  map.touchZoomRotate.disableRotation();
 
   // Load initial data for visible layers
   map.on('load', async () => {
