@@ -47,6 +47,7 @@ const getBaseUrl = (path) => {
 const geoserverHost = import.meta.env.VITE_WFS_HOST || 'https://geoserver.stichtingimn.nl';
 const geoserverPath = import.meta.env.VITE_WFS_PATH || '/geoserver/ows';
 const geoserverUrl = `${geoserverHost}${geoserverPath}?`;
+const useStaticData = import.meta.env.VITE_USE_STATIC_DATA === 'true';
 
 // Unified layer configuration with metadata and default visibility
 const layerConfig = {
@@ -56,7 +57,9 @@ const layerConfig = {
     defaultVisible: true,
     order: 1, // UI checkbox order
     zIndex: 50, // Map drawing order (highest - on top)
-    sourceUrl: `${geoserverUrl}service=WFS&request=GetFeature&typename=meldingen:actueel&version=1.1.0&srsname=EPSG:4326&outputFormat=application/json`,
+    sourceUrl: useStaticData
+      ? '/data/actueel.json'
+      : `${geoserverUrl}service=WFS&request=GetFeature&typename=meldingen:actueel&version=1.1.0&srsname=EPSG:4326&outputFormat=application/json`,
   },
   uur: {
     title: 'Meldingen laatste zestig minuten',
@@ -64,7 +67,9 @@ const layerConfig = {
     defaultVisible: true,
     order: 2, // UI checkbox order
     zIndex: 40, // Map drawing order (below actueel)
-    sourceUrl: `${geoserverUrl}service=WFS&request=GetFeature&typename=meldingen:uur&version=1.1.0&srsname=EPSG:4326&outputFormat=application/json`,
+    sourceUrl: useStaticData
+      ? '/data/uur.json'
+      : `${geoserverUrl}service=WFS&request=GetFeature&typename=meldingen:uur&version=1.1.0&srsname=EPSG:4326&outputFormat=application/json`,
   },
   vandaag: {
     title: 'Meldingen vandaag',
@@ -72,7 +77,9 @@ const layerConfig = {
     defaultVisible: false,
     order: 3, // UI checkbox order
     zIndex: 30, // Map drawing order (below uur)
-    sourceUrl: `${geoserverUrl}service=WFS&request=GetFeature&typename=meldingen:vandaag&version=1.1.0&srsname=EPSG:4326&outputFormat=application/json`,
+    sourceUrl: useStaticData
+      ? '/data/vandaag.json'
+      : `${geoserverUrl}service=WFS&request=GetFeature&typename=meldingen:vandaag&version=1.1.0&srsname=EPSG:4326&outputFormat=application/json`,
   },
   imwegen: {
     title: 'IM-wegen',
