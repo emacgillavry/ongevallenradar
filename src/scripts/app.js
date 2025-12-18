@@ -343,6 +343,14 @@ const rayons = [
 
 // Start the main application code (DOM-dependent only)
 document.addEventListener('DOMContentLoaded', function () {
+  // Set CSS custom property for viewport height (fixes mobile browser UI issues)
+  const setViewportHeight = () => {
+    const vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+  };
+  setViewportHeight();
+  window.addEventListener('resize', setViewportHeight);
+
   // Cookie config and state variables (DOM-dependent)
   let cookieInfo;
   const loadCookie = function () {
