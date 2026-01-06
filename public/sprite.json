@@ -1,0 +1,58 @@
+{
+  "triangle-red": {
+    "x": 0,
+    "y": 0,
+    "width": 28,
+    "height": 28,
+    "pixelRatio": 1
+  },
+  "triangle-orange": {
+    "x": 28,
+    "y": 0,
+    "width": 28,
+    "height": 28,
+    "pixelRatio": 1
+  },
+  "triangle-yellow": {
+    "x": 56,
+    "y": 0,
+    "width": 28,
+    "height": 28,
+    "pixelRatio": 1
+  },
+  "triangle-lightgray": {
+    "x": 87,
+    "y": 3,
+    "width": 22,
+    "height": 22,
+    "pixelRatio": 1
+  },
+  "circle-red": {
+    "x": 3,
+    "y": 31,
+    "width": 22,
+    "height": 22,
+    "pixelRatio": 1
+  },
+  "circle-orange": {
+    "x": 31,
+    "y": 31,
+    "width": 22,
+    "height": 22,
+    "pixelRatio": 1
+  },
+  "circle-yellow": {
+    "x": 59,
+    "y": 31,
+    "width": 22,
+    "height": 22,
+    "pixelRatio": 1
+  },
+  "circle-lightgray": {
+    "x": 88,
+    "y": 32,
+    "width": 20,
+    "height": 20,
+    "pixelRatio": 1
+  }
+}

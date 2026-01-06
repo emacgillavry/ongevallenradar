@@ -4,25 +4,45 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "vite",
+    "build": "vite build",
+    "build:release": "npm run build && npm run package",
+    "package": "cd dist && zip -r ../ongevallenradar-website.zip . && cd .. && tar -czf ongevallenradar-website.tar.gz -C dist .",
+    "serve": "vite preview",
+    "generate-sprites": "node generate-sprite-assets.js",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "format:html": "prettier --write \"**/*.html\"",
+    "format:js": "prettier --write \"**/*.js\"",
+    "format:css": "prettier --write \"**/*.css\"",
+    "check": "npm run format:check && npm run lint"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bartvde/ongevallenradar.git"
+    "url": "git+https://github.com/emacgillavry/ongevallenradar.git"
   },
-  "author": "Bart van den Eijnden (OSGIS)",
+  "author": "Edward Mac Gillavry (Webmapper)",
   "license": "BSD-2-Clause",
   "dependencies": {
-    "bootstrap": "^3.3.7",
-    "jquery": "^2.2.4",
-    "js-cookie": "^2.1.3",
-    "material-icons": "^0.1.0",
-    "multiselect": "^0.9.12",
-    "openlayers": "3.18.1",
-    "pretty-checkbox": "^2.1.0"
+    "choices.js": "^11.1.0",
+    "js-cookie": "^3.0.5",
+    "maplibre-gl": "^5.15.0"
   },
   "bugs": {
-    "url": "https://github.com/bartvde/ongevallenradar/issues"
+    "url": "https://github.com/emacgillavry/ongevallenradar/issues"
   },
-  "homepage": "https://github.com/bartvde/ongevallenradar#readme"
+  "homepage": "https://github.com/emacgillavry/ongevallenradar#readme",
+  "devDependencies": {
+    "canvas": "^3.2.0",
+    "eslint": "^9.39.2",
+    "eslint-plugin-html": "^8.1.3",
+    "prettier": "^3.7.4",
+    "vite": "^7.3.0",
+    "vite-plugin-compression": "^0.5.1",
+    "vite-plugin-html-minifier": "^1.0.5",
+    "vite-plugin-static-copy": "^3.1.4"
+  }
 }

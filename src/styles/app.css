@@ -1,0 +1,507 @@
+/* Visually hide but keep accessible */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+* {
+  box-sizing: border-box;
+}
+
+:after,
+:before {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+}
+body {
+  margin: 0;
+  font-family: Verdana, Arial, 'Trebuchet MS', Helvetica, sans-serif !important;
+  font-size: 14px !important;
+  line-height: 1.42857143;
+  color: #333;
+  overflow-x: hidden;
+  display: grid;
+  grid-template-rows: 1fr;
+  grid-template-columns: 1fr 340px;
+  height: 100vh;
+}
+
+/* Choices.js customizations */
+.choices {
+  font-size: 14px !important;
+}
+
+/* Ensure Choices.js dropdown appears above other elements */
+.choices__list.choices__list--dropdown {
+  z-index: 10000 !important;
+}
+
+.choices__input::placeholder {
+  color: #666 !important;
+}
+
+.choices__list--dropdown .choices__item--highlighted,
+.choices__list--dropdown .choices__item--selectable.is-highlighted,
+.choices__list[aria-expanded] .choices__item--selectable.is-highlighted {
+  background-color: #d3e6ec !important;
+}
+
+label {
+  display: inline-block;
+  margin-bottom: 5px;
+  color: #077395;
+  font-weight: normal;
+}
+button {
+  background-color: white;
+  color: #077395 !important;
+}
+#canvas {
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+#backtomain {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+}
+.flexcontainer {
+  justify-content: space-between;
+  display: flex;
+  flex-direction: column;
+}
+#filter-melder,
+#filter-type,
+#cirkel-pech {
+  margin: 30px 0 25px 30px;
+}
+#save-settings,
+#clear-settings {
+  margin: 30px 0 0 30px;
+}
+h1 {
+  padding: 15px 0 0 30px;
+  margin: 0;
+  background: white url(../assets/images/logo.svg) no-repeat left;
+  background-position-x: 30px;
+  background-position-y: 19px;
+  background-size: 275px 72px;
+  height: 128px;
+}
+#layers {
+  background-color: white;
+  padding: 0 0 0 35px;
+  margin: -10px 0 -10px 0;
+  overflow: auto;
+}
+#filter {
+  background-color: white;
+  padding: 0 5px 0 35px;
+}
+#beep {
+  background-color: white;
+  padding: 0 0 0 35px;
+  margin: -10px 0 -10px 0;
+}
+#settings {
+  margin: 30px 0 15px 30px;
+  height: 50px;
+}
+#beep-button {
+  margin-right: 10px;
+}
+#save {
+  margin-right: 10px;
+}
+#legend {
+  overflow: auto;
+  color: #077395;
+  height: 100px;
+  background-color: white;
+  margin: 0 0 0 40px;
+  justify-content: space-between;
+  display: flex;
+  flex-direction: row;
+}
+.legendimg {
+  padding: 2px;
+  width: 28px;
+  border: none;
+  vertical-align: middle;
+}
+.legendtext {
+  padding-left: 15px;
+}
+#datetime {
+  background-color: white;
+  font-weight: bold;
+  width: 100%;
+  text-align: center;
+  color: #83b9ca;
+}
+#hour {
+  font-size: 50px;
+}
+#date {
+  font-size: 20px;
+  margin: -10px 0 0 0;
+}
+.between {
+  border: 1px solid #d3e6ec;
+}
+#legendfooter {
+  background-color: white;
+  margin: 10px;
+}
+#map {
+  grid-row: 1;
+  grid-column: 1;
+  height: 100%;
+  width: 100%;
+  z-index: 1;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+aside {
+  position: relative;
+  grid-row: 1 / 3;
+  grid-column: 2 / 3;
+  width: 340px;
+  height: 100%;
+  background: #d3e6ec;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 10;
+  padding-left: 15px;
+}
+
+aside > div {
+  background: #fff;
+}
+
+aside.collapsed {
+  width: 15px;
+  min-width: 15px;
+  max-width: 15px;
+  overflow: hidden;
+  padding-left: 15px;
+}
+
+aside.collapsed #collapse-button {
+  transform: rotate(180deg);
+}
+
+#collapse-button {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 15px;
+  height: 15px;
+  background-color: #d3e6ec;
+  background-image: url(../assets/images/collapse.svg);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 15px 15px;
+  border: none;
+  cursor: pointer;
+  z-index: 20;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#options,
+#backtomain {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  font-size: 18px;
+  line-height: 1.42857143;
+  font-family: Verdana, Arial, 'Trebuchet MS', Helvetica, sans-serif;
+}
+#mainoptions {
+  width: 100%;
+  height: calc(100% - 128px);
+  background-color: #fff;
+}
+#secondaryoptions {
+  display: none;
+  background-color: #fff;
+  justify-content: start;
+  height: calc(100% - 128px);
+}
+#filter-button {
+  width: 50px;
+  height: 20px;
+}
+
+/* Remove .expanded and .collapsed image swap rules */
+/* .collapsed, .expanded { display: none; } */
+.bordertext {
+  text-align: right;
+  color: #d3e6ec;
+}
+
+/* Custom checkbox styles for labels containing checkbox inputs */
+label:has(input[type='checkbox']) {
+  line-height: 1;
+  position: relative;
+  display: block;
+  margin: 0 0 5px 0;
+  font-weight: normal;
+}
+
+label > input[type='checkbox'],
+label > input[type='radio'] {
+  position: absolute;
+  z-index: 10;
+  top: 0;
+  left: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  cursor: pointer;
+  opacity: 0;
+}
+
+label:has(input[type='checkbox']) i {
+  font-size: 1em !important;
+  position: relative;
+  display: inline-block;
+  box-sizing: initial;
+  min-width: 1em;
+  margin-right: 6px;
+  padding: 1px;
+  text-align: center;
+}
+
+label:has(input[type='checkbox']) i:before {
+  position: relative;
+  z-index: 1;
+  left: 0;
+  display: inline-block;
+  vertical-align: bottom;
+  color: transparent;
+  background-color: #fff;
+  content: '✓';
+  font-weight: bold;
+}
+
+label:has(input[type='checkbox']) i:after {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  content: '';
+  color: transparent;
+  border: 1px solid #b9b9b9;
+}
+
+label > input[type='checkbox']:checked + i:before,
+label > input[type='radio']:checked + i:before {
+  color: #077395;
+  background-color: #fff;
+}
+
+label > input[type='checkbox'][disabled],
+label > input[type='radio'][disabled] {
+  cursor: not-allowed;
+  opacity: 0;
+}
+
+label:has(input[disabled]) {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Mobile styles for screens 800px and smaller */
+@media (max-width: 800px) {
+  body {
+    grid-template-rows: 1fr;
+    grid-template-columns: 1fr;
+  }
+  #map {
+    grid-row: 1;
+    grid-column: 1;
+    height: 100vh;
+    height: calc(var(--vh, 1vh) * 100);
+    width: 100vw;
+  }
+  aside {
+    display: none;
+  }
+  #collapse-button {
+    display: none;
+  }
+}
+
+/* Bootstrap replacement styles */
+.form-control {
+  display: block;
+  width: 100%;
+  padding: 6px 12px;
+  font-size: 14px;
+  line-height: 1.42857143;
+  color: #555;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.form-control:focus {
+  border-color: #66afe9;
+  outline: 0;
+  box-shadow:
+    inset 0 1px 1px rgba(0, 0, 0, 0.075),
+    0 0 8px rgba(102, 175, 233, 0.6);
+}
+
+/* Table styles - consolidated */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+/* General table cell styles */
+td,
+th {
+  padding: 0;
+  vertical-align: middle;
+}
+
+/* Bootstrap popover styles (extracted for popup functionality) */
+.popover {
+  max-width: 276px;
+  padding: 1px;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.42857143;
+  text-align: left;
+  text-decoration: none;
+  text-shadow: none;
+  text-transform: none;
+  letter-spacing: normal;
+  word-break: normal;
+  word-spacing: normal;
+  word-wrap: normal;
+  white-space: normal;
+}
+
+.popover-title {
+  font-weight: 500;
+  line-height: 1.1;
+  padding: 8px 14px;
+  margin: 0;
+  font-size: 14px;
+  background-color: #f7f7f7;
+  border-bottom: 1px solid #ebebeb;
+  border-radius: 5px 5px 0 0;
+}
+
+.popover-content {
+  padding: 9px 14px;
+}
+
+/* Bootstrap .table class replacement (for popup tables) */
+.table {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Bootstrap .table enhanced rules (extracted) - ensure popup tables match Bootstrap visuals */
+.table > thead > tr > th,
+.table > thead > tr > td,
+.table > tbody > tr > th,
+.table > tbody > tr > td,
+.table > tfoot > tr > th,
+.table > tfoot > tr > td {
+  padding: 8px;
+  line-height: 1.42857143;
+  vertical-align: top;
+  border-top: 1px solid #ddd;
+}
+
+.table > thead > tr > th {
+  vertical-align: bottom;
+  border-bottom: 2px solid #ddd;
+}
+
+.maplibregl-popup-content {
+  border: 1px solid rgba(0, 0, 0, 0.2) !important;
+  border-radius: 6px !important;
+  padding: 0 !important;
+}
+
+button.maplibregl-popup-close-button {
+  text-decoration: none;
+  color: #337ab7 !important;
+  position: absolute;
+  top: 2px;
+  right: 8px;
+  font-size: 28px !important;
+  font-weight: bold !important;
+  background-color: #f7f7f7 !important;
+}
+
+button.maplibregl-popup-close-button:hover {
+  color: #23527c !important;
+  background-color: #f7f7f7 !important;
+}
+
+/* MapLibre ZOOM CONTROLS Styling */
+.maplibregl-ctrl-group:not(:empty) {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5) !important;
+}
+.maplibregl-ctrl-group {
+  background: rgb(51%, 73%, 79%) !important;
+}
+
+.maplibregl-ctrl-zoom-in .maplibregl-ctrl-icon {
+  background-image: url(data:image/svg+xml;charset=utf8,<svg%20viewBox%3D%270%200%2020%2020%27%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27>%0A%20%20<path%20style%3D%27fill%3A%23ffffff%3B%27%20d%3D%27M%2010%206%20C%209.446%206%209%206.4459904%209%207%20L%209%209%20L%207%209%20C%206.446%209%206%209.446%206%2010%20C%206%2010.554%206.446%2011%207%2011%20L%209%2011%20L%209%2013%20C%209%2013.55401%209.446%2014%2010%2014%20C%2010.554%2014%2011%2013.55401%2011%2013%20L%2011%2011%20L%2013%2011%20C%2013.554%2011%2014%2010.554%2014%2010%20C%2014%209.446%2013.554%209%2013%209%20L%2011%209%20L%2011%207%20C%2011%206.4459904%2010.554%206%2010%206%20z%27%20%2F>%0A<%2Fsvg>%0A) !important;
+}
+
+.maplibregl-ctrl-zoom-out .maplibregl-ctrl-icon {
+  background-image: url(data:image/svg+xml;charset=utf8,<svg%20viewBox%3D%270%200%2020%2020%27%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27>%0A%20%20<path%20style%3D%27fill%3A%23ffffff%3B%27%20d%3D%27m%207%2C9%20c%20-0.554%2C0%20-1%2C0.446%20-1%2C1%200%2C0.554%200.446%2C1%201%2C1%20l%206%2C0%20c%200.554%2C0%201%2C-0.446%201%2C-1%200%2C-0.554%20-0.446%2C-1%20-1%2C-1%20z%27%20%2F>%0A<%2Fsvg>%0A) !important;
+}
+
+/* MapLibre Attribution Control Styling */
+
+.maplibregl-ctrl-attrib-button {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill-rule='evenodd' viewBox='0 0 20 20'%3E%3Cpath fill='%234495AF' d='M4 10a6 6 0 1 0 12 0 6 6 0 1 0-12 0m5-3a1 1 0 1 0 2 0 1 1 0 1 0-2 0m0 3a1 1 0 1 1 2 0v3a1 1 0 1 1-2 0'/%3E%3C/svg%3E") !important;
+}
+
+.maplibregl-ctrl-attrib a {
+  font-family: Verdana, Arial, 'Trebuchet MS', Helvetica, sans-serif !important;
+  font-size: 14px !important;
+  color: #077395 !important;
+  cursor: pointer !important;
+  font-weight: 700 !important;
+}
+
+.maplibregl-ctrl-attrib a:hover,
+.maplibregl-ctrl-attrib a:active,
+.maplibregl-ctrl-attrib a:visited {
+  color: #077395 !important;
+  text-decoration: none !important;
+}

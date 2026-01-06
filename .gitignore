@@ -1,1 +1,9 @@
 vendor
+node_modules
+dist
+.env*
+.env.local
+.env.*.local
+# Deployment packages
+ongevallenradar-website.zip
+ongevallenradar-website.tar.gz
