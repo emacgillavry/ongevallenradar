@@ -1024,12 +1024,10 @@ document.addEventListener('DOMContentLoaded', function () {
   new Autocomplete('#autocomplete', {
     autoSelect: true,
     search: (input) => {
-      // Use PDOK Locatieserver suggest API with env variable
-      const PDOK_API_BASE = import.meta.env.VITE_PDOK_API_BASE;
-      // Remove commas and periods from input before searching
-      const cleanInput = input.replace(/[,.]/g, '');
-      const url = `${PDOK_API_BASE}/suggest?rows=10&fq=type:hectometerpaal&fl=id,score,type,hectometernummer,hectometerletter,wegnummer&q=${encodeURIComponent(cleanInput)}`;
-      if (cleanInput.length < 3) {
+      // Use geocoder search API with explicit URL
+      const GEOCODER_SEARCH_URL = import.meta.env.VITE_GEOCODER_SEARCH_URL;
+      const url = `${GEOCODER_SEARCH_URL}${encodeURIComponent(input)}`;
+      if (input.length < 3) {
         return Promise.resolve([]);
       }
       return fetch(url)
@@ -1046,8 +1044,8 @@ document.addEventListener('DOMContentLoaded', function () {
     },
     onSubmit: (result) => {
       if (result && result.id) {
-        const PDOK_API_BASE = import.meta.env.VITE_PDOK_API_BASE;
-        const getUrl = `${PDOK_API_BASE}/lookup?id=${result.id}`;
+        const GEOCODER_LOOKUP_URL = import.meta.env.VITE_GEOCODER_LOOKUP_URL;
+        const getUrl = `${GEOCODER_LOOKUP_URL}${result.id}`;
         fetch(getUrl)
           .then((response) => response.json())
           .then((data) => {
