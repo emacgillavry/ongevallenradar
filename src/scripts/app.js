@@ -1024,9 +1024,9 @@ document.addEventListener('DOMContentLoaded', function () {
   new Autocomplete('#autocomplete', {
     autoSelect: true,
     search: (input) => {
-      // Use geocoder search API with explicit URL
+      // Use geocoder search API with placeholder replacement
       const GEOCODER_SEARCH_URL = import.meta.env.VITE_GEOCODER_SEARCH_URL;
-      const url = `${GEOCODER_SEARCH_URL}${encodeURIComponent(input)}`;
+      const url = GEOCODER_SEARCH_URL.replace('{SEARCH_TERM}', encodeURIComponent(input));
       if (input.length < 3) {
         return Promise.resolve([]);
       }
@@ -1045,7 +1045,7 @@ document.addEventListener('DOMContentLoaded', function () {
     onSubmit: (result) => {
       if (result && result.id) {
         const GEOCODER_LOOKUP_URL = import.meta.env.VITE_GEOCODER_LOOKUP_URL;
-        const getUrl = `${GEOCODER_LOOKUP_URL}${result.id}`;
+        const getUrl = GEOCODER_LOOKUP_URL.replace('{SEARCH_TERM}', result.id);
         fetch(getUrl)
           .then((response) => response.json())
           .then((data) => {
