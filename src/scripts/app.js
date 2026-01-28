@@ -1032,50 +1032,32 @@ document.addEventListener('DOMContentLoaded', function () {
       }
       return fetch(url)
         .then((response) => response.json())
-        .then((data) => data.response.docs);
+        .then((data) => data.features || []);
     },
     getResultValue: (result) => {
-      if (result.type === 'hectometerpaal') {
-        const hm = (parseInt(result.hectometernummer, 10) / 10).toFixed(1);
-        const letter = result.hectometerletter ? ` ${result.hectometerletter}` : '';
-        return `Hectometerpaal ${result.wegnummer}-${hm}${letter}`;
+      // Handle WFS/GeoJSON features
+      if (result.properties && result.properties.BPS) {
+        return `hectometerpaal ${result.properties.BPS}`;
       }
-      return result.weergavenaam;
+      return result.properties?.BPS || 'Unknown location';
     },
     onSubmit: (result) => {
-      if (result && result.id) {
-        const GEOCODER_LOOKUP_URL = import.meta.env.VITE_GEOCODER_LOOKUP_URL;
-        const getUrl = GEOCODER_LOOKUP_URL.replace('{SEARCH_TERM}', result.id);
-        fetch(getUrl)
-          .then((response) => response.json())
-          .then((data) => {
-            const zoomlevel = {
-              gemeente: 9,
-              woonplaats: 9,
-              weg: 14,
-              hectometerpaal: 18,
-              postcode: 14,
-              adres: 14,
-            };
-            const doc = data.response.docs[0];
-            const location = {
-              center: doc.centroide_ll
-                .slice(6, -1)
-                .split(' ')
-                .map((x) => parseFloat(x, 10)),
-              zoom: zoomlevel[doc.type],
-            };
-            // Use the map instance to fly to the selected location
-            map.easeTo({
-              center: location.center,
-              zoom: location.zoom,
-              duration: 10,
-            });
+      if (result && result.geometry && result.geometry.coordinates) {
+        const coordinates = result.geometry.coordinates;
+        const location = {
+          center: coordinates,
+          zoom: 18, // High zoom for specific locations
+        };
+        // Use the map instance to fly to the selected location
+        map.easeTo({
+          center: location.center,
+          zoom: location.zoom,
+          duration: 10,
+        });
 
-            // Change button class from search to clear after location is selected
-            autocompleteButton.classList.remove('search');
-            autocompleteButton.classList.add('clear');
-          });
+        // Change button class from search to clear after location is selected
+        autocompleteButton.classList.remove('search');
+        autocompleteButton.classList.add('clear');
       }
     },
   });
