@@ -27,6 +27,13 @@
     "height": 43,
     "pixelRatio": 2
   },
+  "triangle-custom": {
+    "x": 224,
+    "y": 0,
+    "width": 55,
+    "height": 55,
+    "pixelRatio": 2
+  },
   "circle-red": {
     "x": 6,
     "y": 62,
@@ -53,6 +60,20 @@
     "y": 64,
     "width": 38,
     "height": 38,
+    "pixelRatio": 2
+  },
+  "circle-custom": {
+    "x": 230,
+    "y": 62,
+    "width": 42,
+    "height": 42,
+    "pixelRatio": 2
+  },
+  "pinpoint": {
+    "x": 22,
+    "y": 134,
+    "width": 10,
+    "height": 10,
     "pixelRatio": 2
   }
 }

@@ -1005,6 +1005,38 @@ document.addEventListener('DOMContentLoaded', function () {
     if (layerInfo.vandaag) {
       loadGeoJSON('vandaag');
     }
+
+    // Add pinpoint source for geocoder results
+    map.addSource('pinpoint', {
+      type: 'geojson',
+      data: {
+        type: 'FeatureCollection',
+        features: [],
+      },
+    });
+
+    // Add pinpoint layer with custom styling
+    map.addLayer({
+      id: 'pinpoint',
+      type: 'symbol',
+      source: 'pinpoint',
+      layout: {
+        'text-field': ['get', 'bps'],
+        'text-font': ['Arial Bold'],
+        'text-size': 13,
+        'text-anchor': 'center',
+        'text-offset': [0, -1.5],
+        'icon-image': 'pinpoint',
+        'icon-size': 2, // Scale up the 5px marker to 10px
+        'text-allow-overlap': true,
+        'icon-allow-overlap': true,
+      },
+      paint: {
+        'text-color': 'rgb(68, 149, 175)',
+        'text-halo-color': 'rgb(255, 255, 255)',
+        'text-halo-width': 2,
+      },
+    });
   });
 
   // Initialize autocomplete after map is created (so map.easeTo() works)
@@ -1018,8 +1050,46 @@ document.addEventListener('DOMContentLoaded', function () {
       autocompleteInput.value = '';
       autocompleteButton.classList.remove('clear');
       autocompleteButton.classList.add('search');
+
+      // Clear the pinpoint marker using GeoJSON source
+      const emptyGeojson = {
+        type: 'FeatureCollection',
+        features: [],
+      };
+      map.getSource('pinpoint').setData(emptyGeojson);
     }
   });
+
+  // Function to update pinpoint location using GeoJSON source
+  const updatePinpointLocation = (coordinates, bpsLabel) => {
+    // Clear existing pinpoint data first
+    const emptyGeojson = {
+      type: 'FeatureCollection',
+      features: [],
+    };
+    map.getSource('pinpoint').setData(emptyGeojson);
+
+    // Create new GeoJSON feature with BPS label
+    const pinpointGeojson = {
+      type: 'FeatureCollection',
+      features: [
+        {
+          type: 'Feature',
+          geometry: {
+            type: 'Point',
+            coordinates: coordinates,
+          },
+          properties: {
+            bps: bpsLabel,
+            label: bpsLabel,
+          },
+        },
+      ],
+    };
+
+    // Add the pinpoint to the map
+    map.getSource('pinpoint').setData(pinpointGeojson);
+  };
 
   new Autocomplete('#autocomplete', {
     autoSelect: true,
@@ -1044,6 +1114,11 @@ document.addEventListener('DOMContentLoaded', function () {
     onSubmit: (result) => {
       if (result && result.geometry && result.geometry.coordinates) {
         const coordinates = result.geometry.coordinates;
+        const bpsLabel = result.properties?.BPS || 'Unknown';
+
+        // Update pinpoint location using GeoJSON source
+        updatePinpointLocation(coordinates, bpsLabel);
+
         const location = {
           center: coordinates,
           zoom: 18, // High zoom for specific locations
@@ -1052,7 +1127,7 @@ document.addEventListener('DOMContentLoaded', function () {
         map.easeTo({
           center: location.center,
           zoom: location.zoom,
-          duration: 10,
+          duration: 1000,
         });
 
         // Change button class from search to clear after location is selected
