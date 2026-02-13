@@ -59,7 +59,11 @@ const layerConfig = {
     order: 1, // UI checkbox order
     zIndex: 50, // Map drawing order (highest - on top)
     sourceUrl: useStaticData
-      ? '/data/actueel.json'
+      ? () =>
+          import('../assets/data/actueel.json').then(
+            (module) =>
+              `data:application/json,${encodeURIComponent(JSON.stringify(module.default))}`
+          )
       : `${geoserverUrl}service=WFS&request=GetFeature&typename=meldingen:actueel&version=1.1.0&srsname=EPSG:4326&outputFormat=application/json`,
   },
   uur: {
@@ -69,7 +73,11 @@ const layerConfig = {
     order: 2, // UI checkbox order
     zIndex: 40, // Map drawing order (below actueel)
     sourceUrl: useStaticData
-      ? '/data/uur.json'
+      ? () =>
+          import('../assets/data/uur.json').then(
+            (module) =>
+              `data:application/json,${encodeURIComponent(JSON.stringify(module.default))}`
+          )
       : `${geoserverUrl}service=WFS&request=GetFeature&typename=meldingen:uur&version=1.1.0&srsname=EPSG:4326&outputFormat=application/json`,
   },
   vandaag: {
@@ -79,7 +87,11 @@ const layerConfig = {
     order: 3, // UI checkbox order
     zIndex: 30, // Map drawing order (below uur)
     sourceUrl: useStaticData
-      ? '/data/vandaag.json'
+      ? () =>
+          import('../assets/data/vandaag.json').then(
+            (module) =>
+              `data:application/json,${encodeURIComponent(JSON.stringify(module.default))}`
+          )
       : `${geoserverUrl}service=WFS&request=GetFeature&typename=meldingen:vandaag&version=1.1.0&srsname=EPSG:4326&outputFormat=application/json`,
   },
   imwegen: {
@@ -389,7 +401,13 @@ document.addEventListener('DOMContentLoaded', function () {
       if (!layerDef || layerDef.type !== 'vector') {
         throw new Error(`Invalid layer key or not a vector layer: ${layerKey}`);
       }
-      const url = layerDef.sourceUrl;
+
+      // Handle both string URLs and functions that return promises (for dynamic imports)
+      let url = layerDef.sourceUrl;
+      if (typeof url === 'function') {
+        url = await url();
+      }
+
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

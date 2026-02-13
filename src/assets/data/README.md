@@ -25,5 +25,5 @@ To capture real data for testing:
 Or use curl:
 
 ```bash
-curl "https://tileserver2.incidentcentrale.nl/geoserver/ows?service=WFS&request=GetFeature&typename=meldingen:actueel&version=1.1.0&srsname=EPSG:4326&outputFormat=application/json" > public/data/actueel.json
+curl "https://tileserver2.incidentcentrale.nl/geoserver/ows?service=WFS&request=GetFeature&typename=meldingen:actueel&version=1.1.0&srsname=EPSG:4326&outputFormat=application/json" > src/assets/data/actueel.json
 ```
