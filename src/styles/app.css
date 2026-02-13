@@ -4,7 +4,7 @@
   grid-column: 1;
   margin: 0 auto 0 auto;
   width: 400px;
-  background: #fff;
+  background: rgb(211, 230, 236);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   display: flex;
   align-items: center;
