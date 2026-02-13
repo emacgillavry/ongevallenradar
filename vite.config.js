@@ -82,11 +82,17 @@ export default defineConfig(({ mode }) => {
       compression({
         algorithm: 'gzip',
         ext: '.gz',
+        filter: /\.(js|css|html|json|svg)$/i, // Use filter instead of include
+        threshold: 512,
+        deleteOriginFile: false,
       }),
       // Generate Brotli compressed files
       compression({
         algorithm: 'brotliCompress',
         ext: '.br',
+        filter: /\.(js|css|html|json|svg)$/i, // Use filter instead of include
+        threshold: 512,
+        deleteOriginFile: false,
       }),
     ],
   };
