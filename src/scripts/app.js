@@ -1106,15 +1106,15 @@ document.addEventListener('DOMContentLoaded', function () {
     },
     getResultValue: (result) => {
       // Handle WFS/GeoJSON features
-      if (result.properties && result.properties.BPS) {
-        return `hectometerpaal ${result.properties.BPS}`;
+      if (result.properties && result.properties.bps) {
+        return `${result.properties.bps}`;
       }
-      return result.properties?.BPS || 'Unknown location';
+      return result.properties?.bps || 'Unknown location';
     },
     onSubmit: (result) => {
       if (result && result.geometry && result.geometry.coordinates) {
         const coordinates = result.geometry.coordinates;
-        const bpsLabel = result.properties?.BPS || 'Unknown';
+        const bpsLabel = result.properties?.bps || 'Unknown';
 
         // Update pinpoint location using GeoJSON source
         updatePinpointLocation(coordinates, bpsLabel);
