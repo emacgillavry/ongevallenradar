@@ -1120,16 +1120,34 @@ document.addEventListener('DOMContentLoaded', function () {
       }
       return fetch(url)
         .then((response) => response.json())
-        .then((data) => data.features || []);
+        .then((data) => {
+          const features = data.features || [];
+          // If no results found, return a placeholder result
+          if (features.length === 0) {
+            return [
+              {
+                properties: { bps: null },
+                geometry: null,
+                isNoResult: true,
+              },
+            ];
+          }
+          return features;
+        });
     },
     getResultValue: (result) => {
       // Handle WFS/GeoJSON features
       if (result.properties && result.properties.bps) {
         return `${result.properties.bps}`;
       }
-      return result.properties?.bps || 'Unknown location';
+      return result.properties?.bps || 'Geen zoekresultaten';
     },
     onSubmit: (result) => {
+      // Don't do anything if this is a "no results" placeholder
+      if (result && result.isNoResult) {
+        return;
+      }
+
       if (result && result.geometry && result.geometry.coordinates) {
         const coordinates = result.geometry.coordinates;
         const bpsLabel = result.properties?.bps || 'Unknown';
