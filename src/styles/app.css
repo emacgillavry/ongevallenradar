@@ -1,16 +1,28 @@
 #autocomplete {
-  height: 56px;
+  height: auto;
   grid-row: 1;
   grid-column: 1;
   margin: 0 auto 0 auto;
   width: 400px;
-  background: rgb(211, 230, 236);
+  background-color: rgb(255, 255, 255);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
   padding: 8px 16px;
   z-index: 100;
 }
+
+#autocomplete label {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.autocomplete-input-container {
+  display: flex;
+  width: 100%;
+}
+
 .autocomplete-input {
   box-sizing: border-box;
   min-height: 44px;
@@ -440,7 +452,7 @@ label:has(input[disabled]) {
     border-radius: 0;
     box-shadow: none;
     padding: 12px 16px;
-    height: 56px;
+    height: auto;
   }
   #map {
     grid-row: 2;
