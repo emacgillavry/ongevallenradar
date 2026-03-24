@@ -29,22 +29,22 @@
   "license": "BSD-2-Clause",
   "dependencies": {
     "@trevoreyre/autocomplete-js": "^3.0.3",
-    "choices.js": "^11.1.0",
+    "choices.js": "^11.2.1",
     "js-cookie": "^3.0.5",
-    "maplibre-gl": "^5.19.0"
+    "maplibre-gl": "^5.21.0"
   },
   "bugs": {
     "url": "https://github.com/emacgillavry/ongevallenradar/issues"
   },
   "homepage": "https://github.com/emacgillavry/ongevallenradar#readme",
   "devDependencies": {
-    "canvas": "^3.2.0",
+    "canvas": "^3.2.2",
     "eslint": "^10.0.2",
     "eslint-plugin-html": "^8.1.3",
     "prettier": "^3.7.4",
-    "vite": "^7.3.0",
+    "vite": "^8.0.2",
     "vite-plugin-compression": "^0.5.1",
     "vite-plugin-html-minifier": "^1.0.5",
-    "vite-plugin-static-copy": "^3.1.4"
+    "vite-plugin-static-copy": "^4.0.0"
   }
 }
