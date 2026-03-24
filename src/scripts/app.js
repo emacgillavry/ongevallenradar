@@ -591,6 +591,42 @@ document.addEventListener('DOMContentLoaded', function () {
 
   const hasRayon = () => Object.values(selectedRayons).some((selected) => selected === true);
 
+  // Missing load functions that reset state from cookies
+  const loadCirkelFromCookie = () => {
+    cirkel = cookieInfo ? cookieInfo.cirkel : false;
+    document.getElementById('cirkel').checked = cirkel;
+  };
+
+  const loadLayerInfoFromCookie = () => {
+    layerInfo = cookieInfo ? cookieInfo.layers : defaultLayerInfo;
+  };
+
+  const loadRayonInfoFromCookie = () => {
+    selectedRayons = cookieInfo ? cookieInfo.selectedRayons : {};
+    filterRayon = cookieInfo ? cookieInfo.filterRayon : false;
+  };
+
+  const loadMelderInfoFromCookie = () => {
+    selectedMeldersCat = cookieInfo ? cookieInfo.selectedMeldersCat : defaultMeldersCat;
+    filterMelder = cookieInfo ? cookieInfo.filterMelder : false;
+    // Reinitialize selectedMelders based on selectedMeldersCat
+    for (let m = 0, mm = melders.length; m < mm; ++m) {
+      const isSelected = selectedMeldersCat[melders[m].id];
+      for (let itemI = 0, itemII = melders[m].items.length; itemI < itemII; ++itemI) {
+        selectedMelders[melders[m].items[itemI].toLowerCase()] = isSelected;
+      }
+    }
+  };
+
+  const loadBeepFromCookie = () => {
+    allowBeep = cookieInfo ? cookieInfo.allowBeep : true;
+  };
+
+  const loadTypesFromCookie = () => {
+    filterType = cookieInfo ? cookieInfo.filterType : false;
+    selectedTypes = cookieInfo ? cookieInfo.selectedTypes : defaultTypes;
+  };
+
   // Function to save current settings to cookies
   const saveToCookie = function () {
     const json = {};
