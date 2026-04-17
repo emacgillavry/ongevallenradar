@@ -726,6 +726,9 @@ document.addEventListener('DOMContentLoaded', function () {
     setBeepImg();
     loadTypesFromCookie();
     setTypeFilter();
+
+    // Update map styling to reflect current cirkel setting after reset
+    updateCirkelMapStyling();
   });
 
   document.getElementById('options').addEventListener('click', function (evt) {
@@ -1696,72 +1699,76 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
+  // Function to update map styling based on current cirkel setting
+  const updateCirkelMapStyling = function () {
+    if (!map) return;
+
+    // Define the dynamic icon expression for actueel layer (priority-based colors)
+    const actueleIconExpression = [
+      'case',
+      // If cirkel is enabled AND incident_type is not 'Ongeval', use circles
+      ['all', ['literal', cirkel], ['!=', ['get', 'incident_type'], 'Ongeval']],
+      [
+        'case',
+        ['==', ['get', 'nummer'], 'een'],
+        'circle-red',
+        ['==', ['get', 'nummer'], 'twee'],
+        'circle-orange',
+        ['in', ['get', 'nummer'], ['literal', ['drie', 'vier', 'vijf']]],
+        'circle-yellow',
+        'circle-gray', // default circle
+      ],
+      // Otherwise use triangles
+      [
+        'case',
+        ['==', ['get', 'nummer'], 'een'],
+        'triangle-red',
+        ['==', ['get', 'nummer'], 'twee'],
+        'triangle-orange',
+        ['in', ['get', 'nummer'], ['literal', ['drie', 'vier', 'vijf']]],
+        'triangle-yellow',
+        'triangle-gray', // default triangle
+      ],
+    ];
+
+    // Define the icon expression for uur and vandaag layers (light gray only)
+    const uureVandaagIconExpression = [
+      'case',
+      // If cirkel is enabled AND incident_type is not 'Ongeval', use circles
+      ['all', ['literal', cirkel], ['!=', ['get', 'incident_type'], 'Ongeval']],
+      'circle-lightgray', // Light gray circle
+      'triangle-lightgray', // Light gray triangle
+    ];
+
+    // Update actueel layer
+    try {
+      if (map.getLayer && map.getLayer('actueel-layer')) {
+        map.setLayoutProperty('actueel-layer', 'icon-image', actueleIconExpression);
+      }
+    } catch (error) {
+      console.error('Error updating actueel-layer:', error);
+    }
+
+    // Update uur and vandaag layers
+    ['uur-layer', 'vandaag-layer'].forEach((layerName) => {
+      try {
+        if (map.getLayer && map.getLayer(layerName)) {
+          map.setLayoutProperty(layerName, 'icon-image', uureVandaagIconExpression);
+        }
+      } catch (error) {
+        console.error(`Error updating layer ${layerName}:`, error);
+      }
+    });
+  };
+
   const onChangeCirkel = function (evt) {
     cirkel = evt.target.checked;
 
     // Store preference in cookie using the existing function
     saveToCookie();
 
-    // Update map layers with new styling
-    if (map) {
-      // Define the dynamic icon expression for actueel layer (priority-based colors)
-      const actueleIconExpression = [
-        'case',
-        // If cirkel is enabled AND incident_type is not 'Ongeval', use circles
-        ['all', ['literal', cirkel], ['!=', ['get', 'incident_type'], 'Ongeval']],
-        [
-          'case',
-          ['==', ['get', 'nummer'], 'een'],
-          'circle-red',
-          ['==', ['get', 'nummer'], 'twee'],
-          'circle-orange',
-          ['in', ['get', 'nummer'], ['literal', ['drie', 'vier', 'vijf']]],
-          'circle-yellow',
-          'circle-gray', // default circle
-        ],
-        // Otherwise use triangles
-        [
-          'case',
-          ['==', ['get', 'nummer'], 'een'],
-          'triangle-red',
-          ['==', ['get', 'nummer'], 'twee'],
-          'triangle-orange',
-          ['in', ['get', 'nummer'], ['literal', ['drie', 'vier', 'vijf']]],
-          'triangle-yellow',
-          'triangle-gray', // default triangle
-        ],
-      ];
-
-      // Define the icon expression for uur and vandaag layers (light gray only)
-      const uureVandaagIconExpression = [
-        'case',
-        // If cirkel is enabled AND incident_type is not 'Ongeval', use circles
-        ['all', ['literal', cirkel], ['!=', ['get', 'incident_type'], 'Ongeval']],
-        'circle-lightgray', // Light gray circle
-        'triangle-lightgray', // Light gray triangle
-      ];
-
-      // Update actueel layer
-      try {
-        if (map.getLayer && map.getLayer('actueel-layer')) {
-          console.log('Updating actueel-layer with new circle preference');
-          map.setLayoutProperty('actueel-layer', 'icon-image', actueleIconExpression);
-        }
-      } catch (error) {
-        console.error('Error updating actueel-layer:', error);
-      }
-
-      // Update uur and vandaag layers
-      ['uur-layer', 'vandaag-layer'].forEach((layerName) => {
-        try {
-          if (map.getLayer && map.getLayer(layerName)) {
-            map.setLayoutProperty(layerName, 'icon-image', uureVandaagIconExpression);
-          }
-        } catch (error) {
-          console.error(`Error updating layer ${layerName}:`, error);
-        }
-      });
-    }
+    // Update map styling to reflect new cirkel setting
+    updateCirkelMapStyling();
   };
 
   document.getElementById('cirkel').addEventListener('change', onChangeCirkel);
