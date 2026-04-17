@@ -679,7 +679,7 @@ document.addEventListener('DOMContentLoaded', function () {
     json.allowBeep = allowBeep;
     json.filterType = filterType;
     json.selectedTypes = selectedTypes;
-    Cookies.set(cookieName, JSON.stringify(json));
+    Cookies.set(cookieName, JSON.stringify(json), { expires: 365 });
   };
 
   document.getElementById('save').addEventListener('click', function (evt) {
