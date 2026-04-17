@@ -372,19 +372,63 @@ document.addEventListener('DOMContentLoaded', function () {
   };
   loadCookie();
 
-  // Initialize state from cookies
+  // URL parameter parsing for deep links and overrides
+  const getUrlVars = function () {
+    const vars = {};
+    if (window.location.href.indexOf('?') === -1) {
+      return vars; // No query parameters
+    }
+    const hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+    for (let i = 0; i < hashes.length; i++) {
+      const hash = hashes[i].split('=');
+      if (hash[0] && hash[1]) {
+        vars[hash[0]] = decodeURIComponent(hash[1]);
+      }
+    }
+    return vars;
+  };
+  const urlVars = getUrlVars();
+
+  // Initialize state from cookies (with URL overrides where applicable)
   let filterType = cookieInfo ? cookieInfo.filterType : false;
   let selectedTypes = cookieInfo ? cookieInfo.selectedTypes : defaultTypes;
   let allowBeep = cookieInfo ? cookieInfo.allowBeep : true;
   const selectedMelders = {};
   let selectedMeldersCat = cookieInfo ? cookieInfo.selectedMeldersCat : defaultMeldersCat;
   let filterMelder = cookieInfo ? cookieInfo.filterMelder : false;
-  let selectedRayons = cookieInfo ? cookieInfo.selectedRayons : {};
-  let filterRayon = cookieInfo ? cookieInfo.filterRayon : false;
+
+  // Rayon loading functions with URL priority (URL > cookie > default)
+  let selectedRayons = {};
+  let filterRayon = false;
+  const loadRayonInfoFromCookie = function () {
+    selectedRayons = cookieInfo ? cookieInfo.selectedRayons : {};
+    filterRayon = cookieInfo ? cookieInfo.filterRayon : false;
+  };
+  const loadRayonInfoFromUrl = function () {
+    selectedRayons = {};
+    const rayonList = urlVars.rayon.split(',');
+    for (let i = 0; i < rayonList.length; i++) {
+      const rayon = rayonList[i].trim();
+      // Validate rayon exists in our rayons array
+      if (rayons.includes(rayon)) {
+        selectedRayons[rayon] = true;
+      } else {
+        console.warn(`Invalid rayon from URL parameter: ${rayon}`);
+      }
+    }
+    filterRayon = Object.keys(selectedRayons).length > 0;
+  };
+
+  // Load rayons with priority: URL > cookie > default
+  if (urlVars.rayon) {
+    loadRayonInfoFromUrl();
+  } else {
+    loadRayonInfoFromCookie();
+  }
+
   let layerInfo = cookieInfo ? cookieInfo.layers : defaultLayerInfo;
   let cirkel = cookieInfo ? cookieInfo.cirkel : false;
 
-  // Set initial UI state (DOM-dependent)
   document.getElementById('cirkel').checked = cirkel;
 
   // Track existing features for beeping functionality
@@ -598,12 +642,8 @@ document.addEventListener('DOMContentLoaded', function () {
   };
 
   const loadLayerInfoFromCookie = () => {
-    layerInfo = cookieInfo ? cookieInfo.layers : defaultLayerInfo;
-  };
-
-  const loadRayonInfoFromCookie = () => {
-    selectedRayons = cookieInfo ? cookieInfo.selectedRayons : {};
-    filterRayon = cookieInfo ? cookieInfo.filterRayon : false;
+    // Create a fresh copy to avoid reference issues
+    layerInfo = cookieInfo ? cookieInfo.layers : { ...defaultLayerInfo };
   };
 
   const loadMelderInfoFromCookie = () => {
@@ -647,15 +687,38 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   document.getElementById('clear').addEventListener('click', function (evt) {
+    // Prevent multiple rapid clicks
+    if (this.disabled) return;
+    this.disabled = true;
+    setTimeout(() => {
+      this.disabled = false;
+    }, 1000);
+
     Cookies.remove(cookieName);
     loadCookie();
     loadCirkelFromCookie();
-    onChangeCirkel({ target: document.getElementById('cirkel') });
     loadLayerInfoFromCookie();
     applyLayerVisbility();
-    loadRayonInfoFromCookie();
-    // Clear all selected rayons in Choices.js
+
+    // Clear rayons, but re-apply URL parameters if present
+    if (urlVars.rayon) {
+      loadRayonInfoFromUrl();
+    } else {
+      loadRayonInfoFromCookie();
+    }
+
+    // Clear all selected rayons in Choices.js and reapply URL selections
     rayonChoices.removeActiveItems();
+    // Reapply URL rayon selections to Choices.js
+    Object.keys(selectedRayons).forEach((rayon) => {
+      if (selectedRayons[rayon]) {
+        const existingChoices = rayonChoices.getValue();
+        if (!existingChoices.find((choice) => choice.value === rayon)) {
+          rayonChoices.setChoiceByValue(rayon);
+        }
+      }
+    });
+
     setToggleImg();
     loadMelderInfoFromCookie();
     setMelderFilter();
@@ -1297,7 +1360,9 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('beep-button').addEventListener('click', function (evt) {
     allowBeep = !allowBeep;
     setBeepImg();
+    saveToCookie(); // Save beep setting to cookie automatically
   });
+
   const beep = function () {
     const sound = new Audio(
       'data:audio/wav;base64,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qJrx4KOQjahZxWbcZgztj2c49nKmkId44S71j0c8eV9yDK6uPRzx5X18eDvjvQ6yKo9ZSS6l//8elePK/Lf//IInrOF/FvDoADYAGBMGb7FtErm5MXMlmPAJQVgWta7Zx2go+8xJ0UiCb8LHHdftWyLJE0QIAIsI+UbXu67dZMjmgDGCGl1H+vpF4NSDckSIkk7Vd+sxEhBQMRU8j/12UIRhzSaUdQ+rQU5kGeFxm+hb1oh6pWWmv3uvmReDl0UnvtapVaIzo1jZbf/pD6ElLqSX+rUmOQNpJFa/r+sa4e/pBlAABoAAAAA3CUgShLdGIxsY7AUABPRrgCABdDuQ5GC7DqPQCgbbJUAoRSUj+NIEig0YfyWUho1VBBBA//uQZB4ABZx5zfMakeAAAAmwAAAAF5F3P0w9GtAAACfAAAAAwLhMDmAYWMgVEG1U0FIGCBgXBXAtfMH10000EEEEEECUBYln03TTTdNBDZopopYvrTTdNa325mImNg3TTPV9q3pmY0xoO6bv3r00y+IDGid/9aaaZTGMuj9mpu9Mpio1dXrr5HERTZSmqU36A3CumzN/9Robv/Xx4v9ijkSRSNLQhAWumap82WRSBUqXStV/YcS+XVLnSS+WLDroqArFkMEsAS+eWmrUzrO0oEmE40RlMZ5+ODIkAyKAGUwZ3mVKmcamcJnMW26MRPgUw6j+LkhyHGVGYjSUUKNpuJUQoOIAyDvEyG8S5yfK6dhZc0Tx1KI/gviKL6qvvFs1+bWtaz58uUNnryq6kt5RzOCkPWlVqVX2a/EEBUdU1KrXLf40GoiiFXK///qpoiDXrOgqDR38JB0bw7SoL+ZB9o1RCkQjQ2CBYZKd/+VJxZRRZlqSkKiws0WFxUyCwsKiMy7hUVFhIaCrNQsKkTIsLivwKKigsj8XYlwt/WKi2N4d//uQRCSAAjURNIHpMZBGYiaQPSYyAAABLAAAAAAAACWAAAAApUF/Mg+0aohSIRobBAsMlO//Kk4soosy1JSFRYWaLC4qZBYWFRGZdwqKiwkNBVmoWFSJkWFxX4FFRQWR+LsS4W/rFRb/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////VEFHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU291bmRib3kuZGUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMjAwNGh0dHA6Ly93d3cuc291bmRib3kuZGUAAAAAAAAAACU='
@@ -1445,7 +1510,24 @@ document.addEventListener('DOMContentLoaded', function () {
       const melderElement = document.getElementById('melder_' + melders[i].id);
       melderElement.checked = checked;
       if (!checked) {
-        handleMelderFilter({ target: melderElement });
+        // During initialization, don't trigger auto-save - just set the filter state
+        for (let m = 0, mm = melders.length; m < mm; ++m) {
+          if (melders[m].id === melderElement.value) {
+            selectedMeldersCat[melderElement.value] = melderElement.checked;
+            for (let itemI = 0, itemII = melders[m].items.length; itemI < itemII; ++itemI) {
+              selectedMelders[melders[m].items[itemI].toLowerCase()] = melderElement.checked;
+            }
+            break;
+          }
+        }
+        filterMelder = true;
+        // Apply filters to cached data instead of refetching
+        Object.keys(layerConfig).forEach((layerKey) => {
+          if (layerConfig[layerKey].type === 'vector') {
+            applyFiltersToLayer(layerKey);
+          }
+        });
+        // DON'T call saveToCookie() during init
       }
     }
   };
@@ -1505,7 +1587,16 @@ document.addEventListener('DOMContentLoaded', function () {
       const typeElement = document.getElementById('type_' + typeOptions[t].id);
       typeElement.checked = checked;
       if (!checked) {
-        handleTypeFilter({ target: typeElement });
+        // During initialization, don't trigger auto-save - just set the filter state
+        selectedTypes[typeElement.value] = typeElement.checked;
+        filterType = true;
+        // Apply filters to cached data instead of refetching
+        Object.keys(layerConfig).forEach((layerKey) => {
+          if (layerConfig[layerKey].type === 'vector') {
+            applyFiltersToLayer(layerKey);
+          }
+        });
+        // DON'T call saveToCookie() during init
       }
     }
   };
