@@ -1262,10 +1262,9 @@ document.addEventListener('DOMContentLoaded', function () {
           zoom: 18, // High zoom for specific locations
         };
         // Use the map instance to fly to the selected location
-        map.easeTo({
+        map.flyTo({
           center: location.center,
           zoom: location.zoom,
-          duration: 1000,
         });
 
         // Change button class from search to clear after location is selected
