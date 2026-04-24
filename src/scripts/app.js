@@ -682,10 +682,6 @@ document.addEventListener('DOMContentLoaded', function () {
     Cookies.set(cookieName, JSON.stringify(json), { expires: 365 });
   };
 
-  document.getElementById('save').addEventListener('click', function (evt) {
-    saveToCookie();
-  });
-
   document.getElementById('clear').addEventListener('click', function (evt) {
     // Prevent multiple rapid clicks
     if (this.disabled) return;
