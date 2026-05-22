@@ -197,11 +197,13 @@ button {
   display: flex;
   flex-direction: column;
 }
+
 #filter-melder,
 #filter-type,
 #cirkel-pech {
   margin: 30px 0 25px 30px;
 }
+
 #save-settings,
 #clear-settings {
   margin: 30px 0 0 30px;
