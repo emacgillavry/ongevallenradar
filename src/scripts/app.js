@@ -428,8 +428,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
   let layerInfo = cookieInfo ? cookieInfo.layers : defaultLayerInfo;
   let cirkel = cookieInfo ? cookieInfo.cirkel : false;
+  let wegbeheer = cookieInfo ? (cookieInfo.wegbeheer ?? false) : false;
 
   document.getElementById('cirkel').checked = cirkel;
+  document.getElementById('wegbeheer').checked = wegbeheer;
 
   // Track existing features for beeping functionality
   const existingFeatures = {
@@ -641,6 +643,13 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('cirkel').checked = cirkel;
   };
 
+  const loadWegbeheerFromCookie = () => {
+    wegbeheer = cookieInfo ? (cookieInfo.wegbeheer ?? false) : false;
+    document.getElementById('wegbeheer').checked = wegbeheer;
+    const source = map.getSource('imwegen-wms');
+    if (source) source.setTiles([getImwegenSourceUrl()]);
+  };
+
   const loadLayerInfoFromCookie = () => {
     // Create a fresh copy to avoid reference issues
     layerInfo = cookieInfo ? cookieInfo.layers : { ...defaultLayerInfo };
@@ -671,6 +680,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const saveToCookie = function () {
     const json = {};
     json.layers = layerInfo; // Use current layerInfo object directly
+    json.wegbeheer = wegbeheer;
     json.filterRayon = filterRayon;
     json.selectedRayons = selectedRayons;
     json.filterMelder = filterMelder;
@@ -693,6 +703,7 @@ document.addEventListener('DOMContentLoaded', function () {
     Cookies.remove(cookieName);
     loadCookie();
     loadCirkelFromCookie();
+    loadWegbeheerFromCookie();
     loadLayerInfoFromCookie();
     applyLayerVisbility();
 
@@ -809,6 +820,11 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
+  const getImwegenSourceUrl = () => {
+    const layer = wegbeheer ? 'im_wegen:imwegenb' : 'im_wegen:imwegen';
+    return `${geoserverUrl}service=WMS&request=GetMap&layers=${layer}&styles=&format=image%2Fpng&transparent=true&version=1.1.1&width=256&height=256&srs=EPSG%3A3857&bbox={bbox-epsg-3857}`;
+  };
+
   // Helper function to generate sources from layerConfig
   const generateSources = () => {
     const sources = {
@@ -840,9 +856,10 @@ document.addEventListener('DOMContentLoaded', function () {
         };
       } else if (layerDef.type === 'raster') {
         // Raster sources use WMS tiles
+        const tileUrl = layerId === 'imwegen' ? getImwegenSourceUrl() : layerDef.sourceUrl;
         sources[layerId + '-wms'] = {
           type: 'raster',
-          tiles: [layerDef.sourceUrl],
+          tiles: [tileUrl],
           tileSize: 256,
         };
       }
@@ -1767,6 +1784,13 @@ document.addEventListener('DOMContentLoaded', function () {
   };
 
   document.getElementById('cirkel').addEventListener('change', onChangeCirkel);
+
+  document.getElementById('wegbeheer').addEventListener('change', function (evt) {
+    wegbeheer = evt.target.checked;
+    const source = map.getSource('imwegen-wms');
+    if (source) source.setTiles([getImwegenSourceUrl()]);
+    saveToCookie();
+  });
 
   setDateTime();
   window.setInterval(reloadFeatures, 10000);
