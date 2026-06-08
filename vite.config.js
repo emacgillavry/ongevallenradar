@@ -1,7 +1,7 @@
 import { defineConfig, loadEnv } from 'vite';
 import htmlMinifier from 'vite-plugin-html-minifier';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
-import compression from 'vite-plugin-compression';
+import { compression } from 'vite-plugin-compression2';
 import { execSync } from 'child_process';
 
 export default defineConfig(({ mode }) => {
@@ -78,21 +78,12 @@ export default defineConfig(({ mode }) => {
           },
         ],
       }),
-      // Generate gzip compressed files
+      // Generate gzip and Brotli compressed files
       compression({
-        algorithm: 'gzip',
-        ext: '.gz',
-        filter: /\.(js|css|html|json|svg)$/i, // Use filter instead of include
+        algorithms: ['gzip', 'brotliCompress'],
+        include: /\.(js|css|html|json|svg)$/i,
         threshold: 512,
-        deleteOriginFile: false,
-      }),
-      // Generate Brotli compressed files
-      compression({
-        algorithm: 'brotliCompress',
-        ext: '.br',
-        filter: /\.(js|css|html|json|svg)$/i, // Use filter instead of include
-        threshold: 512,
-        deleteOriginFile: false,
+        deleteOriginalAssets: false,
       }),
     ],
   };
