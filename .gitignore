@@ -5,5 +5,5 @@ dist
 .env.local
 .env.*.local
 # Deployment packages
-ongevallenradar-website.zip
-ongevallenradar-website.tar.gz
+ongevallenradar-website-*.zip
+ongevallenradar-website-*.tar.gz

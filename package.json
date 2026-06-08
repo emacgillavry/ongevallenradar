@@ -9,7 +9,7 @@
     "dev": "vite",
     "build": "vite build",
     "build:release": "npm run build && npm run package",
-    "package": "cd dist && zip -r ../ongevallenradar-website.zip . && cd .. && tar -czf ongevallenradar-website.tar.gz -C dist .",
+    "package": "rm -f ongevallenradar-website-*.zip ongevallenradar-website-*.tar.gz && cd dist && zip -r \"../ongevallenradar-website-$npm_package_version.zip\" . && cd .. && tar -czf \"ongevallenradar-website-$npm_package_version.tar.gz\" -C dist .",
     "serve": "vite preview",
     "generate-sprites": "node generate-sprite-assets.js",
     "format": "prettier --write .",
