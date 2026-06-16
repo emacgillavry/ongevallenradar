@@ -75,6 +75,7 @@ export default defineConfig(({ mode }) => {
           {
             src: 'assets/images/*',
             dest: 'assets/images',
+            rename: { stripBase: true },
           },
         ],
       }),
